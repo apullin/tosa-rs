@@ -1,0 +1,29 @@
+{
+  "version": { "_major": 0, "_minor": 80, "_patch": 1, "_draft": false },
+  "regions": [
+    {
+      "name": "main",
+      "blocks": [
+        {
+          "name": "block0",
+          "operators": [
+            {
+              "op": "ADD",
+              "attribute_type": "AddAttribute",
+              "attribute": {},
+              "inputs": ["input0", "input1"],
+              "outputs": ["output0"]
+            }
+          ],
+          "tensors": [
+            { "name": "input0", "shape": [1, 8], "type": "FP32" },
+            { "name": "input1", "shape": [1, 8], "type": "FP32" },
+            { "name": "output0", "shape": [1, 8], "type": "FP32" }
+          ],
+          "inputs": ["input0", "input1"],
+          "outputs": ["output0"]
+        }
+      ]
+    }
+  ]
+}

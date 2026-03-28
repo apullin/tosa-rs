@@ -1,0 +1,38 @@
+{
+  "version": { "_major": 0, "_minor": 80, "_patch": 1, "_draft": false },
+  "regions": [
+    {
+      "name": "main",
+      "blocks": [
+        {
+          "name": "block0",
+          "operators": [
+            {
+              "op": "CONV2D",
+              "attribute_type": "Conv2dAttribute",
+              "attribute": { "pad": [1,1,1,1], "stride": [1,1], "dilation": [1,1], "local_bound": false, "acc_type": "FP32" },
+              "inputs": ["input", "weight", "bias"],
+              "outputs": ["conv_out"]
+            },
+            {
+              "op": "CLAMP",
+              "attribute_type": "ClampAttribute",
+              "attribute": { "min_val": [0,0,0,0,0,0,0,0], "max_val": [255,255,255,255,255,255,255,255], "nan_mode": "PROPAGATE" },
+              "inputs": ["conv_out"],
+              "outputs": ["output"]
+            }
+          ],
+          "tensors": [
+            { "name": "input", "shape": [1, 3, 224, 224], "type": "FP32" },
+            { "name": "weight", "shape": [16, 3, 3, 3], "type": "FP32" },
+            { "name": "bias", "shape": [16], "type": "FP32" },
+            { "name": "conv_out", "shape": [1, 16, 224, 224], "type": "FP32" },
+            { "name": "output", "shape": [1, 16, 224, 224], "type": "FP32" }
+          ],
+          "inputs": ["input"],
+          "outputs": ["output"]
+        }
+      ]
+    }
+  ]
+}
