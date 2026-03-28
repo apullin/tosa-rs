@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
-use tosa::serialize::{deserialize, load_file, save_file, serialize};
-use tosa::types::*;
+use tosa_rs::serialize::{deserialize, load_file, save_file, serialize};
+use tosa_rs::types::*;
 
 /// Helper: serialize then deserialize, returning the roundtripped graph.
 fn roundtrip(graph: &TosaGraph) -> TosaGraph {

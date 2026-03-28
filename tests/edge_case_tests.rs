@@ -1,6 +1,6 @@
-use tosa::error::TosaError;
-use tosa::serialize::{deserialize, serialize};
-use tosa::types::*;
+use tosa_rs::error::TosaError;
+use tosa_rs::serialize::{deserialize, serialize};
+use tosa_rs::types::*;
 
 // ---------------------------------------------------------------------------
 // Helper: build a minimal valid TosaGraph

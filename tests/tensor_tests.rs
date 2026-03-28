@@ -1,4 +1,4 @@
-use tosa::{
+use tosa_rs::{
     DType, TosaBasicBlock, TosaGraph, TosaRegion, TosaTensor, Version,
     serialize::{serialize, deserialize},
 };

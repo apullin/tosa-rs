@@ -1,5 +1,5 @@
-use tosa::generated;
-use tosa::types::*;
+use tosa_rs::generated;
+use tosa_rs::types::*;
 
 // ---------------------------------------------------------------------------
 // DType: discriminant values

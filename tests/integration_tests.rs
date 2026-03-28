@@ -1,5 +1,5 @@
-use tosa::types::*;
-use tosa::serialize::deserialize;
+use tosa_rs::types::*;
+use tosa_rs::serialize::deserialize;
 
 #[test]
 fn test_load_minimal_add_fixture() {

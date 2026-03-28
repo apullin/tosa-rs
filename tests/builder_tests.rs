@@ -1,6 +1,6 @@
-use tosa::builder::*;
-use tosa::serialize::{deserialize, serialize};
-use tosa::types::*;
+use tosa_rs::builder::*;
+use tosa_rs::serialize::{deserialize, serialize};
+use tosa_rs::types::*;
 
 // ---------------------------------------------------------------------------
 // 1. Minimal graph: one region, one block, one operator (Op::Add)

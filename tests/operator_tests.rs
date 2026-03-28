@@ -1,4 +1,4 @@
-use tosa::types::*;
+use tosa_rs::types::*;
 
 fn roundtrip_op(op: Op, attr: Attribute, inputs: &[&str], outputs: &[&str]) -> TosaOperator {
     let graph = TosaGraph {
@@ -19,8 +19,8 @@ fn roundtrip_op(op: Op, attr: Attribute, inputs: &[&str], outputs: &[&str]) -> T
             }],
         }],
     };
-    let bytes = tosa::serialize::serialize(&graph);
-    let result = tosa::serialize::deserialize(&bytes).unwrap();
+    let bytes = tosa_rs::serialize::serialize(&graph);
+    let result = tosa_rs::serialize::deserialize(&bytes).unwrap();
     result.regions[0].blocks[0].operators[0].clone()
 }
 
@@ -565,8 +565,8 @@ fn test_operator_with_attribute_none() {
             }],
         }],
     };
-    let bytes = tosa::serialize::serialize(&graph);
-    let result = tosa::serialize::deserialize(&bytes).unwrap();
+    let bytes = tosa_rs::serialize::serialize(&graph);
+    let result = tosa_rs::serialize::deserialize(&bytes).unwrap();
     let op = &result.regions[0].blocks[0].operators[0];
     assert_eq!(op.op, Op::Unknown);
     assert_eq!(op.attribute, Attribute::None);
