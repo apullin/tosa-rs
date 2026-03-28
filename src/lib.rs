@@ -12,12 +12,15 @@ mod tosa_generated {
 
 pub mod builder;
 pub mod error;
+pub mod serialize;
 pub mod types;
 
 // Re-export generated types
 pub use tosa_generated::tosa as generated;
 
 // Re-export public types
+pub use builder::{BlockBuilder, RegionBuilder, TosaGraphBuilder};
+pub use serialize::{deserialize, load_file, save_file, serialize};
 pub use error::TosaError;
 pub use types::{
     // Enums
