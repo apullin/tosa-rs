@@ -6,9 +6,10 @@ use crate::generated;
 // Enums
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 #[repr(u32)]
 pub enum DType {
+    #[default]
     Unknown = 0,
     Bool = 1,
     Uint8 = 2,
@@ -24,12 +25,6 @@ pub enum DType {
     Shape = 12,
     Fp8E4M3 = 13,
     Fp8E5M2 = 14,
-}
-
-impl Default for DType {
-    fn default() -> Self {
-        DType::Unknown
-    }
 }
 
 impl From<generated::DType> for DType {
@@ -61,18 +56,13 @@ impl From<DType> for generated::DType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 #[repr(u32)]
 pub enum ResizeMode {
+    #[default]
     Unknown = 0,
     Nearest = 1,
     Bilinear = 2,
-}
-
-impl Default for ResizeMode {
-    fn default() -> Self {
-        ResizeMode::Unknown
-    }
 }
 
 impl From<generated::ResizeMode> for ResizeMode {
@@ -92,18 +82,13 @@ impl From<ResizeMode> for generated::ResizeMode {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 #[repr(u32)]
 pub enum NanPropagationMode {
+    #[default]
     Unknown = 0,
     Propagate = 1,
     Ignore = 2,
-}
-
-impl Default for NanPropagationMode {
-    fn default() -> Self {
-        NanPropagationMode::Unknown
-    }
 }
 
 impl From<generated::NanPropagationMode> for NanPropagationMode {
@@ -123,9 +108,10 @@ impl From<NanPropagationMode> for generated::NanPropagationMode {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 #[repr(u32)]
 pub enum Op {
+    #[default]
     Unknown = 0,
     ArgMax = 1,
     AvgPool2d = 2,
@@ -203,12 +189,6 @@ pub enum Op {
     VariableWrite = 74,
     VariableRead = 75,
     ConstShape = 76,
-}
-
-impl Default for Op {
-    fn default() -> Self {
-        Op::Unknown
-    }
 }
 
 impl From<generated::Op> for Op {
@@ -636,7 +616,7 @@ pub struct ConstShapeAttribute {}
 // Attribute union enum
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub enum Attribute {
     ArgMax(ArgMaxAttribute),
     AvgPool2d(AvgPool2dAttribute),
@@ -714,13 +694,8 @@ pub enum Attribute {
     VariableWrite(VariableWriteAttribute),
     VariableRead(VariableReadAttribute),
     ConstShape(ConstShapeAttribute),
+    #[default]
     None,
-}
-
-impl Default for Attribute {
-    fn default() -> Self {
-        Attribute::None
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -790,7 +765,7 @@ impl Default for TosaOperator {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct TosaBasicBlock {
     pub name: String,
     pub operators: Vec<TosaOperator>,
@@ -799,44 +774,15 @@ pub struct TosaBasicBlock {
     pub outputs: Vec<String>,
 }
 
-impl Default for TosaBasicBlock {
-    fn default() -> Self {
-        TosaBasicBlock {
-            name: String::new(),
-            operators: Vec::new(),
-            tensors: Vec::new(),
-            inputs: Vec::new(),
-            outputs: Vec::new(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct TosaRegion {
     pub name: String,
     pub blocks: Vec<TosaBasicBlock>,
 }
 
-impl Default for TosaRegion {
-    fn default() -> Self {
-        TosaRegion {
-            name: String::new(),
-            blocks: Vec::new(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct TosaGraph {
     pub version: Version,
     pub regions: Vec<TosaRegion>,
 }
 
-impl Default for TosaGraph {
-    fn default() -> Self {
-        TosaGraph {
-            version: Version::default(),
-            regions: Vec::new(),
-        }
-    }
-}

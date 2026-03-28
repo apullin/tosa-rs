@@ -14,7 +14,13 @@
       "Bash(echo \"EXIT: $?\")",
       "Bash(curl -sL -o /Users/andrewpullin/personal/rust-tosa/docs/executorch-arm-ethos-u-tutorial.html https://docs.pytorch.org/executorch/1.0/tutorial-arm-ethos-u.html)",
       "Bash(find /Users/andrewpullin/personal/executorch-work/u55-pipeline/arm-tosa-engine/tests -name *.rs)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(flatc:*)",
+      "Read(//private/tmp/**)",
+      "Bash(mkdir -p flatc_test)",
+      "Read(//tmp/**)",
+      "Bash(rm -rf /tmp/flatc_test)",
+      "Bash(grep -r \"pub struct DType\\\\|pub struct Op\\\\b\\\\|pub struct ResizeMode\\\\|pub struct NanPropagationMode\" target/debug/build/*/out/*.rs)"
     ]
   }
 }

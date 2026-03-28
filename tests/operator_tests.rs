@@ -542,3 +542,69 @@ test_empty_attr!(test_variable, Variable, Variable, VariableAttribute);
 test_empty_attr!(test_variable_write, VariableWrite, VariableWrite, VariableWriteAttribute);
 test_empty_attr!(test_variable_read, VariableRead, VariableRead, VariableReadAttribute);
 test_empty_attr!(test_const_shape, ConstShape, ConstShape, ConstShapeAttribute);
+
+// ===== Attribute::None and default-field roundtrips =====
+
+#[test]
+fn test_operator_with_attribute_none() {
+    let graph = TosaGraph {
+        version: Version { major: 0, minor: 80, patch: 1, draft: false },
+        regions: vec![TosaRegion {
+            name: "main".into(),
+            blocks: vec![TosaBasicBlock {
+                name: "block0".into(),
+                operators: vec![TosaOperator {
+                    op: Op::Unknown,
+                    attribute: Attribute::None,
+                    inputs: vec!["in".into()],
+                    outputs: vec!["out".into()],
+                }],
+                tensors: vec![],
+                inputs: vec![],
+                outputs: vec![],
+            }],
+        }],
+    };
+    let bytes = tosa::serialize::serialize(&graph);
+    let result = tosa::serialize::deserialize(&bytes).unwrap();
+    let op = &result.regions[0].blocks[0].operators[0];
+    assert_eq!(op.op, Op::Unknown);
+    assert_eq!(op.attribute, Attribute::None);
+    assert_eq!(op.inputs, vec!["in"]);
+    assert_eq!(op.outputs, vec!["out"]);
+}
+
+#[test]
+fn test_conv2d_default_fields() {
+    // All fields at their default values (empty vecs, false, Unknown dtype)
+    let attr = Attribute::Conv2d(Conv2dAttribute::default());
+    let op_out = roundtrip_op(Op::Conv2d, attr, &["input", "weight", "bias"], &["output"]);
+    match op_out.attribute {
+        Attribute::Conv2d(a) => {
+            assert!(a.pad.is_empty());
+            assert!(a.stride.is_empty());
+            assert!(a.dilation.is_empty());
+            assert!(!a.local_bound);
+            assert_eq!(a.acc_type, DType::Unknown);
+        }
+        _ => panic!("wrong attribute type"),
+    }
+}
+
+#[test]
+fn test_rescale_default_fields() {
+    let attr = Attribute::Rescale(RescaleAttribute::default());
+    let op_out = roundtrip_op(Op::Rescale, attr, &["in"], &["out"]);
+    match op_out.attribute {
+        Attribute::Rescale(a) => {
+            assert_eq!(a.input_zp, 0);
+            assert_eq!(a.output_zp, 0);
+            assert!(!a.scale32);
+            assert!(!a.double_round);
+            assert!(!a.per_channel);
+            assert!(!a.input_unsigned);
+            assert!(!a.output_unsigned);
+        }
+        _ => panic!("wrong attribute type"),
+    }
+}

@@ -73,7 +73,7 @@ assert_eq!(graph.regions.len(), deserialized.regions.len());
 This crate covers the full TOSA specification:
 
 - 77 operators (all variants of `Op`)
-- 78 attribute types (all variants of `Attribute`)
+- 76 attribute types (all variants of `Attribute`)
 - 15 data types (`DType`: Bool, Int4, Int8, Int16, Int32, Int48, Uint8, Uint16, Fp16, Fp32, Bf16, Fp8E4M3, Fp8E5M2, Shape, Unknown)
 
 ## Testing

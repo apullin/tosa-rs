@@ -657,11 +657,7 @@ pub fn serialize(graph: &types::TosaGraph) -> Vec<u8> {
         .map(|r| serialize_region(&mut fbb, r))
         .collect();
 
-    let regions_vec = if regions_offsets.is_empty() {
-        None
-    } else {
-        Some(fbb.create_vector(&regions_offsets))
-    };
+    let regions_vec = Some(fbb.create_vector(&regions_offsets));
 
     // Build version
     let version = generated::Version::create(
@@ -698,11 +694,7 @@ fn serialize_region<'a>(
         .map(|b| serialize_block(fbb, b))
         .collect();
 
-    let blocks_vec = if block_offsets.is_empty() {
-        None
-    } else {
-        Some(fbb.create_vector(&block_offsets))
-    };
+    let blocks_vec = Some(fbb.create_vector(&block_offsets));
 
     generated::TosaRegion::create(
         fbb,
@@ -725,11 +717,7 @@ fn serialize_block<'a>(
         .iter()
         .map(|t| serialize_tensor(fbb, t))
         .collect();
-    let tensors_vec = if tensor_offsets.is_empty() {
-        None
-    } else {
-        Some(fbb.create_vector(&tensor_offsets))
-    };
+    let tensors_vec = Some(fbb.create_vector(&tensor_offsets));
 
     // Build operators
     let op_offsets: Vec<_> = block
@@ -737,11 +725,7 @@ fn serialize_block<'a>(
         .iter()
         .map(|op| serialize_operator(fbb, op))
         .collect();
-    let operators_vec = if op_offsets.is_empty() {
-        None
-    } else {
-        Some(fbb.create_vector(&op_offsets))
-    };
+    let operators_vec = Some(fbb.create_vector(&op_offsets));
 
     // Build input/output string vectors
     let inputs = create_string_vector(fbb, &block.inputs);
@@ -763,9 +747,6 @@ fn create_string_vector<'a>(
     fbb: &mut FlatBufferBuilder<'a>,
     strings: &[String],
 ) -> Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>> {
-    if strings.is_empty() {
-        return None;
-    }
     let offsets: Vec<_> = strings.iter().map(|s| fbb.create_string(s)).collect();
     Some(fbb.create_vector(&offsets))
 }
@@ -775,11 +756,7 @@ fn serialize_tensor<'a>(
     tensor: &types::TosaTensor,
 ) -> flatbuffers::WIPOffset<generated::TosaTensor<'a>> {
     let name = fbb.create_string(&tensor.name);
-    let shape = if tensor.shape.is_empty() {
-        None
-    } else {
-        Some(fbb.create_vector(&tensor.shape))
-    };
+    let shape = Some(fbb.create_vector(&tensor.shape));
     let data = tensor.data.as_ref().map(|d| fbb.create_vector(d));
     let variable_name = tensor
         .variable_name
@@ -843,9 +820,9 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::AvgPool2d(a) => {
-            let kernel = if a.kernel.is_empty() { None } else { Some(fbb.create_vector(&a.kernel)) };
-            let stride = if a.stride.is_empty() { None } else { Some(fbb.create_vector(&a.stride)) };
-            let pad = if a.pad.is_empty() { None } else { Some(fbb.create_vector(&a.pad)) };
+            let kernel = Some(fbb.create_vector(&a.kernel));
+            let stride = Some(fbb.create_vector(&a.stride));
+            let pad = Some(fbb.create_vector(&a.pad));
             let o = generated::AvgPool2dAttribute::create(
                 fbb,
                 &generated::AvgPool2dAttributeArgs {
@@ -861,9 +838,9 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::Conv2d(a) => {
-            let pad = if a.pad.is_empty() { None } else { Some(fbb.create_vector(&a.pad)) };
-            let stride = if a.stride.is_empty() { None } else { Some(fbb.create_vector(&a.stride)) };
-            let dilation = if a.dilation.is_empty() { None } else { Some(fbb.create_vector(&a.dilation)) };
+            let pad = Some(fbb.create_vector(&a.pad));
+            let stride = Some(fbb.create_vector(&a.stride));
+            let dilation = Some(fbb.create_vector(&a.dilation));
             let o = generated::Conv2dAttribute::create(
                 fbb,
                 &generated::Conv2dAttributeArgs {
@@ -878,9 +855,9 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::Conv3d(a) => {
-            let pad = if a.pad.is_empty() { None } else { Some(fbb.create_vector(&a.pad)) };
-            let stride = if a.stride.is_empty() { None } else { Some(fbb.create_vector(&a.stride)) };
-            let dilation = if a.dilation.is_empty() { None } else { Some(fbb.create_vector(&a.dilation)) };
+            let pad = Some(fbb.create_vector(&a.pad));
+            let stride = Some(fbb.create_vector(&a.stride));
+            let dilation = Some(fbb.create_vector(&a.dilation));
             let o = generated::Conv3dAttribute::create(
                 fbb,
                 &generated::Conv3dAttributeArgs {
@@ -895,9 +872,9 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::DepthwiseConv2d(a) => {
-            let pad = if a.pad.is_empty() { None } else { Some(fbb.create_vector(&a.pad)) };
-            let stride = if a.stride.is_empty() { None } else { Some(fbb.create_vector(&a.stride)) };
-            let dilation = if a.dilation.is_empty() { None } else { Some(fbb.create_vector(&a.dilation)) };
+            let pad = Some(fbb.create_vector(&a.pad));
+            let stride = Some(fbb.create_vector(&a.stride));
+            let dilation = Some(fbb.create_vector(&a.dilation));
             let o = generated::DepthwiseConv2dAttribute::create(
                 fbb,
                 &generated::DepthwiseConv2dAttributeArgs {
@@ -928,9 +905,9 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::MaxPool2d(a) => {
-            let kernel = if a.kernel.is_empty() { None } else { Some(fbb.create_vector(&a.kernel)) };
-            let stride = if a.stride.is_empty() { None } else { Some(fbb.create_vector(&a.stride)) };
-            let pad = if a.pad.is_empty() { None } else { Some(fbb.create_vector(&a.pad)) };
+            let kernel = Some(fbb.create_vector(&a.kernel));
+            let stride = Some(fbb.create_vector(&a.stride));
+            let pad = Some(fbb.create_vector(&a.pad));
             let o = generated::MaxPool2dAttribute::create(
                 fbb,
                 &generated::MaxPool2dAttributeArgs {
@@ -954,8 +931,8 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::TransposeConv2d(a) => {
-            let out_pad = if a.out_pad.is_empty() { None } else { Some(fbb.create_vector(&a.out_pad)) };
-            let stride = if a.stride.is_empty() { None } else { Some(fbb.create_vector(&a.stride)) };
+            let out_pad = Some(fbb.create_vector(&a.out_pad));
+            let stride = Some(fbb.create_vector(&a.stride));
             let o = generated::TransposeConv2dAttribute::create(
                 fbb,
                 &generated::TransposeConv2dAttributeArgs {
@@ -969,8 +946,8 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::Clamp(a) => {
-            let min_val = if a.min_val.is_empty() { None } else { Some(fbb.create_vector(&a.min_val)) };
-            let max_val = if a.max_val.is_empty() { None } else { Some(fbb.create_vector(&a.max_val)) };
+            let min_val = Some(fbb.create_vector(&a.min_val));
+            let max_val = Some(fbb.create_vector(&a.max_val));
             let o = generated::ClampAttribute::create(
                 fbb,
                 &generated::ClampAttributeArgs {
@@ -1251,7 +1228,7 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::Pad(a) => {
-            let pad_const = if a.pad_const.is_empty() { None } else { Some(fbb.create_vector(&a.pad_const)) };
+            let pad_const = Some(fbb.create_vector(&a.pad_const));
             let o = generated::PadAttribute::create(
                 fbb,
                 &generated::PadAttributeArgs { pad_const },
@@ -1283,7 +1260,7 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::Transpose(a) => {
-            let perms = if a.perms.is_empty() { None } else { Some(fbb.create_vector(&a.perms)) };
+            let perms = Some(fbb.create_vector(&a.perms));
             let o = generated::TransposeAttribute::create(
                 fbb,
                 &generated::TransposeAttributeArgs { perms },
@@ -1345,11 +1322,7 @@ fn serialize_attribute<'a>(
         types::Attribute::Custom(a) => {
             let operator_name = fbb.create_string(&a.operator_name);
             let domain_name = fbb.create_string(&a.domain_name);
-            let implementation_attrs = if a.implementation_attrs.is_empty() {
-                None
-            } else {
-                Some(fbb.create_vector(&a.implementation_attrs))
-            };
+            let implementation_attrs = Some(fbb.create_vector(&a.implementation_attrs));
             let o = generated::CustomAttribute::create(
                 fbb,
                 &generated::CustomAttributeArgs {

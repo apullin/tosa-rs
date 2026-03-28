@@ -514,3 +514,60 @@ fn while_loop_attribute_graph_names_roundtrip() {
         other => panic!("expected WhileLoop attribute, got: {:?}", other),
     }
 }
+
+// ===========================================================================
+// 14. ClampAttribute with proper 8-byte values
+// ===========================================================================
+
+#[test]
+fn clamp_attribute_8byte_convention() {
+    // TOSA convention: min_val and max_val are always 8 bytes (force_align: 8)
+    // For f32: 4 bytes of value + 4 bytes of padding
+    let min_bytes = {
+        let mut v = (-1.0f32).to_le_bytes().to_vec();
+        v.extend_from_slice(&[0u8; 4]); // padding to 8 bytes
+        v
+    };
+    let max_bytes = {
+        let mut v = f32::MAX.to_le_bytes().to_vec();
+        v.extend_from_slice(&[0u8; 4]);
+        v
+    };
+
+    let graph = TosaGraph {
+        version: Version::default(),
+        regions: vec![TosaRegion {
+            name: "main".to_string(),
+            blocks: vec![TosaBasicBlock {
+                name: "b".to_string(),
+                operators: vec![TosaOperator {
+                    op: Op::Clamp,
+                    attribute: Attribute::Clamp(ClampAttribute {
+                        min_val: min_bytes.clone(),
+                        max_val: max_bytes.clone(),
+                        nan_mode: NanPropagationMode::Ignore,
+                    }),
+                    inputs: vec!["x".to_string()],
+                    outputs: vec!["y".to_string()],
+                }],
+                tensors: vec![],
+                inputs: vec![],
+                outputs: vec![],
+            }],
+        }],
+    };
+
+    let bytes = serialize(&graph);
+    let round = deserialize(&bytes).unwrap();
+    let op = &round.regions[0].blocks[0].operators[0];
+    match &op.attribute {
+        Attribute::Clamp(c) => {
+            assert_eq!(c.min_val.len(), 8);
+            assert_eq!(c.max_val.len(), 8);
+            assert_eq!(c.min_val, min_bytes);
+            assert_eq!(c.max_val, max_bytes);
+            assert_eq!(c.nan_mode, NanPropagationMode::Ignore);
+        }
+        _ => panic!("expected Clamp"),
+    }
+}
