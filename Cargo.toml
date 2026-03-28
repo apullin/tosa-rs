@@ -1,0 +1,13 @@
+[package]
+name = "tosa"
+version = "0.1.0"
+edition = "2021"
+description = "Rust types and serialization for TOSA (Tensor Operator Set Architecture) FlatBuffers"
+license = "Apache-2.0"
+
+[dependencies]
+flatbuffers = "24.3"
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+
+[build-dependencies]
