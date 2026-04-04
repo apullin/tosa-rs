@@ -465,7 +465,9 @@ pub struct MinimumAttribute {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct MulAttribute {}
+pub struct MulAttribute {
+    pub shift: i32,
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct PowAttribute {}
@@ -630,8 +632,8 @@ pub struct CondIfAttribute {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct WhileLoopAttribute {
-    pub cond_graph: String,
-    pub body_graph: String,
+    pub cond_branch: String,
+    pub body_branch: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
@@ -747,6 +749,96 @@ pub enum Attribute {
     CastToBlockScaled(CastToBlockScaledAttribute),
     #[default]
     None,
+}
+
+impl Attribute {
+    /// Returns the flatbuffer union discriminant for this attribute variant.
+    ///
+    /// Each variant maps to a `u8` matching the TOSA flatbuffer `Attribute`
+    /// union numbering (which mirrors the `Op` enum values).
+    pub fn union_type(&self) -> u8 {
+        match self {
+            Attribute::None => 0,
+            Attribute::ArgMax(_) => 1,
+            Attribute::AvgPool2d(_) => 2,
+            Attribute::Conv2d(_) => 3,
+            Attribute::Conv3d(_) => 4,
+            Attribute::DepthwiseConv2d(_) => 5,
+            Attribute::FFT2d(_) => 6,
+            Attribute::MatMul(_) => 7,
+            Attribute::MaxPool2d(_) => 8,
+            Attribute::RFFT2d(_) => 9,
+            Attribute::TransposeConv2d(_) => 10,
+            Attribute::Clamp(_) => 11,
+            Attribute::Erf(_) => 12,
+            Attribute::Sigmoid(_) => 13,
+            Attribute::Tanh(_) => 14,
+            Attribute::Add(_) => 15,
+            Attribute::ArithmeticRightShift(_) => 16,
+            Attribute::BitwiseAnd(_) => 17,
+            Attribute::BitwiseOr(_) => 18,
+            Attribute::BitwiseXor(_) => 19,
+            Attribute::IntDiv(_) => 20,
+            Attribute::LogicalAnd(_) => 21,
+            Attribute::LogicalLeftShift(_) => 22,
+            Attribute::LogicalRightShift(_) => 23,
+            Attribute::LogicalOr(_) => 24,
+            Attribute::LogicalXor(_) => 25,
+            Attribute::Maximum(_) => 26,
+            Attribute::Minimum(_) => 27,
+            Attribute::Mul(_) => 28,
+            Attribute::Pow(_) => 29,
+            Attribute::Sub(_) => 30,
+            Attribute::Table(_) => 31,
+            Attribute::Abs(_) => 32,
+            Attribute::BitwiseNot(_) => 33,
+            Attribute::Ceil(_) => 34,
+            Attribute::Clz(_) => 35,
+            Attribute::Cos(_) => 36,
+            Attribute::Exp(_) => 37,
+            Attribute::Floor(_) => 38,
+            Attribute::Log(_) => 39,
+            Attribute::LogicalNot(_) => 40,
+            Attribute::Negate(_) => 41,
+            Attribute::Reciprocal(_) => 42,
+            Attribute::Rsqrt(_) => 43,
+            Attribute::Sin(_) => 44,
+            Attribute::Select(_) => 45,
+            Attribute::Equal(_) => 46,
+            Attribute::Greater(_) => 47,
+            Attribute::GreaterEqual(_) => 48,
+            Attribute::ReduceAll(_) => 49,
+            Attribute::ReduceAny(_) => 50,
+            Attribute::ReduceMax(_) => 51,
+            Attribute::ReduceMin(_) => 52,
+            Attribute::ReduceProduct(_) => 53,
+            Attribute::ReduceSum(_) => 54,
+            Attribute::Concat(_) => 55,
+            Attribute::Pad(_) => 56,
+            Attribute::Reshape(_) => 57,
+            Attribute::Reverse(_) => 58,
+            Attribute::Slice(_) => 59,
+            Attribute::Tile(_) => 60,
+            Attribute::Transpose(_) => 61,
+            Attribute::Gather(_) => 62,
+            Attribute::Scatter(_) => 63,
+            Attribute::Resize(_) => 64,
+            Attribute::Cast(_) => 65,
+            Attribute::Rescale(_) => 66,
+            Attribute::Const(_) => 67,
+            Attribute::Identity(_) => 68,
+            Attribute::Custom(_) => 69,
+            Attribute::CondIf(_) => 70,
+            Attribute::WhileLoop(_) => 71,
+            Attribute::Variable(_) => 72,
+            Attribute::VariableWrite(_) => 73,
+            Attribute::VariableRead(_) => 74,
+            Attribute::ConstShape(_) => 75,
+            Attribute::MatMulTBlockScaled(_) => 76,
+            Attribute::CastFromBlockScaled(_) => 77,
+            Attribute::CastToBlockScaled(_) => 78,
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

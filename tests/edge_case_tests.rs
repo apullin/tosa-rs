@@ -518,8 +518,8 @@ fn while_loop_attribute_graph_names_roundtrip() {
                 operators: vec![TosaOperator {
                     op: Op::WhileLoop,
                     attribute: Attribute::WhileLoop(WhileLoopAttribute {
-                        cond_graph: "loop_condition".to_string(),
-                        body_graph: "loop_body".to_string(),
+                        cond_branch: "loop_condition".to_string(),
+                        body_branch: "loop_body".to_string(),
                     }),
                     inputs: vec!["init".to_string()],
                     outputs: vec!["final".to_string()],
@@ -541,8 +541,8 @@ fn while_loop_attribute_graph_names_roundtrip() {
     assert_eq!(op.op, Op::WhileLoop);
     match &op.attribute {
         Attribute::WhileLoop(w) => {
-            assert_eq!(w.cond_graph, "loop_condition");
-            assert_eq!(w.body_graph, "loop_body");
+            assert_eq!(w.cond_branch, "loop_condition");
+            assert_eq!(w.body_branch, "loop_body");
         }
         other => panic!("expected WhileLoop attribute, got: {:?}", other),
     }

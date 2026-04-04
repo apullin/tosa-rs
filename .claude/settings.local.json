@@ -22,7 +22,8 @@
       "Bash(rm -rf /tmp/flatc_test)",
       "Bash(grep -r \"pub struct DType\\\\|pub struct Op\\\\b\\\\|pub struct ResizeMode\\\\|pub struct NanPropagationMode\" target/debug/build/*/out/*.rs)",
       "Bash(mv /Users/andrewpullin/personal/rust-tosa/minimal_add.tosa /Users/andrewpullin/personal/rust-tosa/tests/fixtures/minimal_add.tosa)",
-      "Bash(mv /Users/andrewpullin/personal/rust-tosa/conv2d_relu.tosa /Users/andrewpullin/personal/rust-tosa/tests/fixtures/conv2d_relu.tosa)"
+      "Bash(mv /Users/andrewpullin/personal/rust-tosa/conv2d_relu.tosa /Users/andrewpullin/personal/rust-tosa/tests/fixtures/conv2d_relu.tosa)",
+      "Bash(gh repo:*)"
     ]
   }
 }

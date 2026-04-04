@@ -448,15 +448,15 @@ fn test_cond_if() {
 #[test]
 fn test_while_loop() {
     let attr = Attribute::WhileLoop(WhileLoopAttribute {
-        cond_graph: "cond_block".into(),
-        body_graph: "body_block".into(),
+        cond_branch: "cond_block".into(),
+        body_branch: "body_block".into(),
     });
     let op_out = roundtrip_op(Op::WhileLoop, attr, &["init"], &["result"]);
     assert_eq!(op_out.op, Op::WhileLoop);
     match op_out.attribute {
         Attribute::WhileLoop(a) => {
-            assert_eq!(a.cond_graph, "cond_block");
-            assert_eq!(a.body_graph, "body_block");
+            assert_eq!(a.cond_branch, "cond_block");
+            assert_eq!(a.body_branch, "body_block");
         }
         _ => panic!("wrong attribute type"),
     }

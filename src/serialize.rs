@@ -378,7 +378,9 @@ fn deserialize_attribute(
         generated::Attribute::MulAttribute => {
             let _a = op.attribute_as_mul_attribute()
                 .ok_or(TosaError::MissingField("MulAttribute"))?;
-            Ok(types::Attribute::Mul(types::MulAttribute {}))
+            Ok(types::Attribute::Mul(types::MulAttribute {
+                shift: 0,
+            }))
         }
         generated::Attribute::PowAttribute => {
             let _a = op.attribute_as_pow_attribute()
@@ -629,8 +631,8 @@ fn deserialize_attribute(
             let a = op.attribute_as_while_loop_attribute()
                 .ok_or(TosaError::MissingField("WhileLoopAttribute"))?;
             Ok(types::Attribute::WhileLoop(types::WhileLoopAttribute {
-                cond_graph: a.cond_graph().unwrap_or("").to_string(),
-                body_graph: a.body_graph().unwrap_or("").to_string(),
+                cond_branch: a.cond_graph().unwrap_or("").to_string(),
+                body_branch: a.body_graph().unwrap_or("").to_string(),
             }))
         }
         generated::Attribute::VariableAttribute => {
@@ -1408,8 +1410,8 @@ fn serialize_attribute<'a>(
         }
 
         types::Attribute::WhileLoop(a) => {
-            let cond_graph = fbb.create_string(&a.cond_graph);
-            let body_graph = fbb.create_string(&a.body_graph);
+            let cond_graph = fbb.create_string(&a.cond_branch);
+            let body_graph = fbb.create_string(&a.body_branch);
             let o = generated::WhileLoopAttribute::create(
                 fbb,
                 &generated::WhileLoopAttributeArgs {
