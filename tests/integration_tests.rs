@@ -7,9 +7,9 @@ fn test_load_minimal_add_fixture() {
     let graph = deserialize(bytes).expect("failed to parse minimal_add fixture");
 
     // Version
-    assert_eq!(graph.version.major, 0);
-    assert_eq!(graph.version.minor, 80);
-    assert_eq!(graph.version.patch, 1);
+    assert_eq!(graph.version.major, 1);
+    assert_eq!(graph.version.minor, 0);
+    assert_eq!(graph.version.patch, 0);
     assert_eq!(graph.version.draft, false);
 
     // Regions
@@ -59,9 +59,9 @@ fn test_load_conv2d_relu_fixture() {
     let graph = deserialize(bytes).expect("failed to parse conv2d_relu fixture");
 
     // Version
-    assert_eq!(graph.version.major, 0);
-    assert_eq!(graph.version.minor, 80);
-    assert_eq!(graph.version.patch, 1);
+    assert_eq!(graph.version.major, 1);
+    assert_eq!(graph.version.minor, 0);
+    assert_eq!(graph.version.patch, 0);
     assert_eq!(graph.version.draft, false);
 
     // Region and block structure

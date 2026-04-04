@@ -23,6 +23,7 @@ fn test_empty_graph_roundtrip() {
             draft: false,
         },
         regions: vec![],
+        ..Default::default()
     };
     let rt = roundtrip(&graph);
     assert_eq!(rt.version, graph.version);
@@ -50,8 +51,10 @@ fn test_one_region_one_empty_block() {
                 tensors: vec![],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
     let rt = roundtrip(&graph);
     assert_eq!(rt.regions.len(), 1);
@@ -85,12 +88,14 @@ fn test_one_region_one_block_with_ops_and_tensors() {
                         attribute: Attribute::Add(AddAttribute {}),
                         inputs: vec!["t0".to_string(), "t1".to_string()],
                         outputs: vec!["t2".to_string()],
+                        ..Default::default()
                     },
                     TosaOperator {
                         op: Op::Reshape,
                         attribute: Attribute::Reshape(ReshapeAttribute {}),
                         inputs: vec!["t2".to_string()],
                         outputs: vec!["t3".to_string()],
+                        ..Default::default()
                     },
                 ],
                 tensors: vec![
@@ -102,6 +107,7 @@ fn test_one_region_one_block_with_ops_and_tensors() {
                         variable: false,
                         is_unranked: false,
                         variable_name: None,
+                        ..Default::default()
                     },
                     TosaTensor {
                         name: "t1".to_string(),
@@ -111,12 +117,15 @@ fn test_one_region_one_block_with_ops_and_tensors() {
                         variable: false,
                         is_unranked: false,
                         variable_name: None,
+                        ..Default::default()
                     },
                 ],
                 inputs: vec!["t0".to_string()],
                 outputs: vec!["t3".to_string()],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
     let rt = roundtrip(&graph);
     let block = &rt.regions[0].blocks[0];
@@ -163,6 +172,7 @@ fn test_multiple_regions() {
                 blocks: vec![],
             },
         ],
+        ..Default::default()
     };
     let rt = roundtrip(&graph);
     assert_eq!(rt.regions.len(), 3);
@@ -199,6 +209,7 @@ fn test_multiple_blocks_per_region() {
                 },
             ],
         }],
+        ..Default::default()
     };
     let rt = roundtrip(&graph);
     assert_eq!(rt.regions[0].blocks.len(), 3);
@@ -243,6 +254,7 @@ fn test_version_fields() {
         let graph = TosaGraph {
             version: v.clone(),
             regions: vec![],
+            ..Default::default()
         };
         let rt = roundtrip(&graph);
         assert_eq!(
@@ -273,8 +285,10 @@ fn test_block_inputs_outputs_roundtrip() {
                     "input_2".to_string(),
                 ],
                 outputs: vec!["output_0".to_string(), "output_1".to_string()],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
     let rt = roundtrip(&graph);
     let block = &rt.regions[0].blocks[0];
@@ -294,6 +308,7 @@ fn test_tosa_file_identifier_in_bytes() {
     let graph = TosaGraph {
         version: Version::default(),
         regions: vec![],
+        ..Default::default()
     };
     let bytes = serialize(&graph);
     // FlatBuffers file identifier sits at bytes[4..8]
@@ -331,6 +346,7 @@ fn test_save_and_load_file() {
                     attribute: Attribute::Identity(IdentityAttribute {}),
                     inputs: vec!["in".to_string()],
                     outputs: vec!["out".to_string()],
+                    ..Default::default()
                 }],
                 tensors: vec![TosaTensor {
                     name: "in".to_string(),
@@ -340,11 +356,14 @@ fn test_save_and_load_file() {
                     variable: false,
                     is_unranked: false,
                     variable_name: None,
+                    ..Default::default()
                 }],
                 inputs: vec!["in".to_string()],
                 outputs: vec!["out".to_string()],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let tmp_dir = std::env::temp_dir();
@@ -389,18 +408,21 @@ fn test_operator_tensor_name_connectivity() {
                         attribute: Attribute::Const(ConstAttribute {}),
                         inputs: vec![],
                         outputs: vec!["weight".to_string()],
+                        ..Default::default()
                     },
                     TosaOperator {
                         op: Op::Add,
                         attribute: Attribute::Add(AddAttribute {}),
                         inputs: vec!["input".to_string(), "weight".to_string()],
                         outputs: vec!["sum_out".to_string()],
+                        ..Default::default()
                     },
                     TosaOperator {
                         op: Op::Sigmoid,
                         attribute: Attribute::Sigmoid(SigmoidAttribute {}),
                         inputs: vec!["sum_out".to_string()],
                         outputs: vec!["result".to_string()],
+                        ..Default::default()
                     },
                 ],
                 tensors: vec![
@@ -412,6 +434,7 @@ fn test_operator_tensor_name_connectivity() {
                         variable: false,
                         is_unranked: false,
                         variable_name: None,
+                        ..Default::default()
                     },
                     TosaTensor {
                         name: "weight".to_string(),
@@ -421,6 +444,7 @@ fn test_operator_tensor_name_connectivity() {
                         variable: false,
                         is_unranked: false,
                         variable_name: None,
+                        ..Default::default()
                     },
                     TosaTensor {
                         name: "sum_out".to_string(),
@@ -430,6 +454,7 @@ fn test_operator_tensor_name_connectivity() {
                         variable: false,
                         is_unranked: false,
                         variable_name: None,
+                        ..Default::default()
                     },
                     TosaTensor {
                         name: "result".to_string(),
@@ -439,12 +464,15 @@ fn test_operator_tensor_name_connectivity() {
                         variable: false,
                         is_unranked: false,
                         variable_name: None,
+                        ..Default::default()
                     },
                 ],
                 inputs: vec!["input".to_string()],
                 outputs: vec!["result".to_string()],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let rt = roundtrip(&graph);

@@ -25,8 +25,10 @@ fn wrap_tensor(tensor: TosaTensor) -> TosaGraph {
                 tensors: vec![tensor],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     }
 }
 
@@ -47,8 +49,10 @@ fn wrap_tensors(tensors: Vec<TosaTensor>) -> TosaGraph {
                 tensors,
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     }
 }
 
@@ -107,10 +111,10 @@ fn tensor_dtype_int4() {
 }
 
 #[test]
-fn tensor_dtype_uint8() {
-    let t = TosaTensor::new("t_uint8", vec![10], DType::Uint8);
+fn tensor_dtype_int32() {
+    let t = TosaTensor::new("t_int32", vec![10], DType::Int32);
     let rt = roundtrip(&wrap_tensor(t));
-    assert_eq!(first_tensor(&rt).dtype, DType::Uint8);
+    assert_eq!(first_tensor(&rt).dtype, DType::Int32);
 }
 
 // -----------------------------------------------------------------------
@@ -191,6 +195,7 @@ fn unranked_tensor() {
         variable: false,
         is_unranked: true,
         variable_name: None,
+        ..Default::default()
     };
 
     let rt = roundtrip(&wrap_tensor(t));
@@ -274,6 +279,7 @@ fn multiple_tensors_in_one_block() {
             variable: false,
             is_unranked: true,
             variable_name: None,
+            ..Default::default()
         },
     ];
 

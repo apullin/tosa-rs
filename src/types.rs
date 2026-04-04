@@ -12,19 +12,23 @@ pub enum DType {
     #[default]
     Unknown = 0,
     Bool = 1,
-    Uint8 = 2,
-    Int4 = 3,
-    Int8 = 4,
-    Int16 = 5,
-    Int32 = 6,
-    Int48 = 7,
-    Fp32 = 8,
-    Uint16 = 9,
-    Fp16 = 10,
-    Bf16 = 11,
-    Shape = 12,
-    Fp8E4M3 = 13,
-    Fp8E5M2 = 14,
+    Int4 = 2,
+    Int8 = 3,
+    Int16 = 4,
+    Int32 = 5,
+    Int48 = 6,
+    Fp32 = 7,
+    Fp16 = 8,
+    Bf16 = 9,
+    Shape = 10,
+    Fp8E4M3 = 11,
+    Fp8E5M2 = 12,
+    Fp6E2M3 = 13,
+    Fp6E3M2 = 14,
+    Fp4E2M1 = 15,
+    Fp8Ue8M0 = 16,
+    Int64 = 17,
+    Mxint8 = 18,
 }
 
 impl From<generated::DType> for DType {
@@ -32,19 +36,23 @@ impl From<generated::DType> for DType {
         match v.0 {
             0 => DType::Unknown,
             1 => DType::Bool,
-            2 => DType::Uint8,
-            3 => DType::Int4,
-            4 => DType::Int8,
-            5 => DType::Int16,
-            6 => DType::Int32,
-            7 => DType::Int48,
-            8 => DType::Fp32,
-            9 => DType::Uint16,
-            10 => DType::Fp16,
-            11 => DType::Bf16,
-            12 => DType::Shape,
-            13 => DType::Fp8E4M3,
-            14 => DType::Fp8E5M2,
+            2 => DType::Int4,
+            3 => DType::Int8,
+            4 => DType::Int16,
+            5 => DType::Int32,
+            6 => DType::Int48,
+            7 => DType::Fp32,
+            8 => DType::Fp16,
+            9 => DType::Bf16,
+            10 => DType::Shape,
+            11 => DType::Fp8E4M3,
+            12 => DType::Fp8E5M2,
+            13 => DType::Fp6E2M3,
+            14 => DType::Fp6E3M2,
+            15 => DType::Fp4E2M1,
+            16 => DType::Fp8Ue8M0,
+            17 => DType::Int64,
+            18 => DType::Mxint8,
             _ => DType::Unknown,
         }
     }
@@ -106,6 +114,42 @@ impl From<NanPropagationMode> for generated::NanPropagationMode {
     fn from(v: NanPropagationMode) -> Self {
         generated::NanPropagationMode(v as u32)
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+#[repr(u32)]
+pub enum RoundingMode {
+    #[default]
+    Unknown = 0,
+    SingleRound = 1,
+    InexactRound = 2,
+    DoubleRound = 3,
+}
+
+impl From<generated::RoundingMode> for RoundingMode {
+    fn from(v: generated::RoundingMode) -> Self {
+        match v.0 { 0 => Self::Unknown, 1 => Self::SingleRound, 2 => Self::InexactRound, 3 => Self::DoubleRound, _ => Self::Unknown }
+    }
+}
+impl From<RoundingMode> for generated::RoundingMode {
+    fn from(v: RoundingMode) -> Self { generated::RoundingMode(v as u32) }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
+#[repr(u32)]
+pub enum BlockSize {
+    #[default]
+    Unknown = 0,
+    BlockSize32 = 32,
+}
+
+impl From<generated::BlockSize> for BlockSize {
+    fn from(v: generated::BlockSize) -> Self {
+        match v.0 { 0 => Self::Unknown, 32 => Self::BlockSize32, _ => Self::Unknown }
+    }
+}
+impl From<BlockSize> for generated::BlockSize {
+    fn from(v: BlockSize) -> Self { generated::BlockSize(v as u32) }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
@@ -184,11 +228,13 @@ pub enum Op {
     Custom = 69,
     CondIf = 70,
     WhileLoop = 71,
-    Yield = 72,
-    Variable = 73,
-    VariableWrite = 74,
-    VariableRead = 75,
-    ConstShape = 76,
+    Variable = 72,
+    VariableWrite = 73,
+    VariableRead = 74,
+    ConstShape = 75,
+    MatmulTBlockScaled = 76,
+    CastFromBlockScaled = 77,
+    CastToBlockScaled = 78,
 }
 
 impl From<generated::Op> for Op {
@@ -266,11 +312,13 @@ impl From<generated::Op> for Op {
             69 => Op::Custom,
             70 => Op::CondIf,
             71 => Op::WhileLoop,
-            72 => Op::Yield,
-            73 => Op::Variable,
-            74 => Op::VariableWrite,
-            75 => Op::VariableRead,
-            76 => Op::ConstShape,
+            72 => Op::Variable,
+            73 => Op::VariableWrite,
+            74 => Op::VariableRead,
+            75 => Op::ConstShape,
+            76 => Op::MatmulTBlockScaled,
+            77 => Op::CastFromBlockScaled,
+            78 => Op::CastToBlockScaled,
             _ => Op::Unknown,
         }
     }
@@ -297,8 +345,6 @@ pub struct AvgPool2dAttribute {
     pub kernel: Vec<i32>,
     pub stride: Vec<i32>,
     pub pad: Vec<i32>,
-    pub input_zp: i32,
-    pub output_zp: i32,
     pub acc_type: DType,
 }
 
@@ -379,9 +425,7 @@ pub struct TanhAttribute {}
 pub struct AddAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct ArithmeticRightShiftAttribute {
-    pub round: bool,
-}
+pub struct ArithmeticRightShiftAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct BitwiseAndAttribute {}
@@ -460,10 +504,7 @@ pub struct LogAttribute {}
 pub struct LogicalNotAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct NegateAttribute {
-    pub input1_zp: i32,
-    pub output_zp: i32,
-}
+pub struct NegateAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct ReciprocalAttribute {}
@@ -524,9 +565,7 @@ pub struct ConcatAttribute {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct PadAttribute {
-    pub pad_const: Vec<u8>,
-}
+pub struct PadAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct ReshapeAttribute {}
@@ -563,10 +602,8 @@ pub struct CastAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct RescaleAttribute {
-    pub input_zp: i32,
-    pub output_zp: i32,
     pub scale32: bool,
-    pub double_round: bool,
+    pub rounding_mode: RoundingMode,
     pub per_channel: bool,
     pub input_unsigned: bool,
     pub output_unsigned: bool,
@@ -598,9 +635,6 @@ pub struct WhileLoopAttribute {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct YieldAttribute {}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct VariableAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
@@ -611,6 +645,21 @@ pub struct VariableReadAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct ConstShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct MatMulTBlockScaledAttribute {
+    pub block_size: BlockSize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct CastFromBlockScaledAttribute {
+    pub block_size: BlockSize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct CastToBlockScaledAttribute {
+    pub block_size: BlockSize,
+}
 
 // ---------------------------------------------------------------------------
 // Attribute union enum
@@ -689,11 +738,13 @@ pub enum Attribute {
     Custom(CustomAttribute),
     CondIf(CondIfAttribute),
     WhileLoop(WhileLoopAttribute),
-    Yield(YieldAttribute),
     Variable(VariableAttribute),
     VariableWrite(VariableWriteAttribute),
     VariableRead(VariableReadAttribute),
     ConstShape(ConstShapeAttribute),
+    MatMulTBlockScaled(MatMulTBlockScaledAttribute),
+    CastFromBlockScaled(CastFromBlockScaledAttribute),
+    CastToBlockScaled(CastToBlockScaledAttribute),
     #[default]
     None,
 }
@@ -701,6 +752,26 @@ pub enum Attribute {
 // ---------------------------------------------------------------------------
 // Core types
 // ---------------------------------------------------------------------------
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct SoftwareVersion {
+    pub major: i32,
+    pub minor: i32,
+    pub micro: i32,
+    pub modifier: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct TosaShape {
+    pub name: String,
+    pub rank: u32,
+    pub data: Vec<u8>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct OpLocation {
+    pub text: String,
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Version {
@@ -730,6 +801,8 @@ pub struct TosaTensor {
     pub variable: bool,
     pub is_unranked: bool,
     pub variable_name: Option<String>,
+    pub offset: u64,
+    pub size: u64,
 }
 
 impl Default for TosaTensor {
@@ -742,6 +815,8 @@ impl Default for TosaTensor {
             variable: false,
             is_unranked: false,
             variable_name: None,
+            offset: 0,
+            size: 0,
         }
     }
 }
@@ -752,6 +827,7 @@ pub struct TosaOperator {
     pub attribute: Attribute,
     pub inputs: Vec<String>,
     pub outputs: Vec<String>,
+    pub location: Option<OpLocation>,
 }
 
 impl Default for TosaOperator {
@@ -761,6 +837,7 @@ impl Default for TosaOperator {
             attribute: Attribute::None,
             inputs: Vec::new(),
             outputs: Vec::new(),
+            location: None,
         }
     }
 }
@@ -772,6 +849,7 @@ pub struct TosaBasicBlock {
     pub tensors: Vec<TosaTensor>,
     pub inputs: Vec<String>,
     pub outputs: Vec<String>,
+    pub shapes: Vec<TosaShape>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
@@ -784,5 +862,6 @@ pub struct TosaRegion {
 pub struct TosaGraph {
     pub version: Version,
     pub regions: Vec<TosaRegion>,
+    pub software_version: Option<SoftwareVersion>,
 }
 

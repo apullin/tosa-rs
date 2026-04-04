@@ -26,19 +26,23 @@ file_extension "tosa";
 enum DType:uint32 {
   UNKNOWN = 0,
   BOOL,
-  UINT8,
   INT4,
   INT8,
   INT16,
   INT32,
   INT48,
   FP32,
-  UINT16,
   FP16,
   BF16,
   SHAPE,
   FP8E4M3,
   FP8E5M2,
+  FP6E2M3,
+  FP6E3M2,
+  FP4E2M1,
+  FP8UE8M0,
+  INT64,
+  MXINT8,
 }
 
 enum ResizeMode:uint32 {
@@ -51,6 +55,18 @@ enum NanPropagationMode:uint32 {
   UNKNOWN = 0,
   PROPAGATE,
   IGNORE,
+}
+
+enum RoundingMode:uint32 {
+  UNKNOWN = 0,
+  SINGLE_ROUND,
+  INEXACT_ROUND,
+  DOUBLE_ROUND
+}
+
+enum BlockSize:uint32 {
+  UNKNOWN = 0,
+  BLOCK_SIZE_32 = 32,
 }
 
 enum Op:uint32 {
@@ -126,11 +142,13 @@ enum Op:uint32 {
   CUSTOM,
   COND_IF,
   WHILE_LOOP,
-  YIELD,
   VARIABLE,
   VARIABLE_WRITE,
   VARIABLE_READ,
   CONST_SHAPE,
+  MATMUL_T_BLOCK_SCALED,
+  CAST_FROM_BLOCK_SCALED,
+  CAST_TO_BLOCK_SCALED,
 }
 
 union Attribute {
@@ -205,11 +223,13 @@ union Attribute {
   CustomAttribute,
   CondIfAttribute,
   WhileLoopAttribute,
-  YieldAttribute,
   VariableAttribute,
   VariableWriteAttribute,
   VariableReadAttribute,
   ConstShapeAttribute,
+  MatMulTBlockScaledAttribute,
+  CastFromBlockScaledAttribute,
+  CastToBlockScaledAttribute,
 }
 
 table ArgMaxAttribute {
@@ -221,8 +241,6 @@ table AvgPool2dAttribute {
   kernel: [int32];
   stride: [int32];
   pad: [int32];
-  input_zp: int32;
-  output_zp: int32;
   acc_type: DType;
 }
 
@@ -373,8 +391,6 @@ table LogicalNotAttribute {
 }
 
 table NegateAttribute {
-  input1_zp: int32;
-  output_zp: int32;
 }
 
 table ReciprocalAttribute {
@@ -429,7 +445,6 @@ table ConcatAttribute {
 }
 
 table PadAttribute {
-  pad_const: [ubyte] (force_align: 8);
 }
 
 table ReshapeAttribute {
@@ -463,10 +478,8 @@ table CastAttribute {
 }
 
 table RescaleAttribute {
-  input_zp: int32;
-  output_zp: int32;
   scale32: bool;
-  double_round: bool;
+  rounding_mode: RoundingMode;
   per_channel: bool;
   input_unsigned: bool;
   output_unsigned: bool;
@@ -495,9 +508,6 @@ table WhileLoopAttribute {
   body_graph: string;
 }
 
-table YieldAttribute {
-}
-
 table VariableAttribute {
 }
 
@@ -511,6 +521,23 @@ table ConstShapeAttribute {
   // value is stored in output TosaTensor
 }
 
+table MatMulTBlockScaledAttribute {
+  block_size: BlockSize;
+}
+
+table CastFromBlockScaledAttribute {
+  block_size: BlockSize;
+}
+
+table CastToBlockScaledAttribute {
+  block_size: BlockSize;
+}
+table SoftwareVersion {
+  _major: int32 = -1;
+  _minor: int32 = -1;
+  _micro: int32 = -1;
+  _modifier: string;
+}
 
 table Version {
   _major: int32 = -1;
@@ -527,13 +554,31 @@ table TosaTensor {
   variable: bool;                   // is this a variable tensor
   is_unranked: bool;                // whether this is an unranked tensor
   variable_name:string;             // name for variable attribute
+
+  // In a model that is larger than 2GB, then tensors instead uses the following
+  // attributes to find stored data, which is outside of flatbuffers
+  // the offset is calculated relative to the beginning of the file and is only
+  // valid if > 1.
+  offset: ulong;
+  size: ulong;
+}
+
+table TosaShape {
+  name: string;                     // name of the shape
+  rank: uint32;                     // rank of the shape
+  data: [ubyte] (force_align: 8);   // raw data array if it's a constant shape
+}
+
+table OpLocation {
+  text: string;       // Opaque string, interpretted by user
 }
 
 table TosaOperator {
   op:Op;                    // operator enum
   attribute:Attribute;      // union structure. operator attribute
-  inputs:[string];          // list of input tensor names
-  outputs:[string];         // list of output tensor names
+  inputs:[string];          // list of input tensor or shape names
+  outputs:[string];         // list of output tensor or shape names
+  location: OpLocation;     // location of this Op in mlir
 }
 
 table TosaBasicBlock {
@@ -542,6 +587,7 @@ table TosaBasicBlock {
   tensors:[TosaTensor];     // tensors array
   inputs:[string];          // name of graph inputs
   outputs:[string];         // name of graph outputs
+  shapes:[TosaShape];       // shapes array
 }
 
 table TosaRegion {
@@ -552,6 +598,7 @@ table TosaRegion {
 table TosaGraph {
   version:Version (required);
   regions:[TosaRegion];       // regions array
+  software_version:SoftwareVersion; // cannot be required for back-compat
 }
 
 root_type TosaGraph;

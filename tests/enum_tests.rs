@@ -9,40 +9,48 @@ use tosa_rs::types::*;
 fn dtype_discriminant_values() {
     assert_eq!(DType::Unknown as u32, 0);
     assert_eq!(DType::Bool as u32, 1);
-    assert_eq!(DType::Uint8 as u32, 2);
-    assert_eq!(DType::Int4 as u32, 3);
-    assert_eq!(DType::Int8 as u32, 4);
-    assert_eq!(DType::Int16 as u32, 5);
-    assert_eq!(DType::Int32 as u32, 6);
-    assert_eq!(DType::Int48 as u32, 7);
-    assert_eq!(DType::Fp32 as u32, 8);
-    assert_eq!(DType::Uint16 as u32, 9);
-    assert_eq!(DType::Fp16 as u32, 10);
-    assert_eq!(DType::Bf16 as u32, 11);
-    assert_eq!(DType::Shape as u32, 12);
-    assert_eq!(DType::Fp8E4M3 as u32, 13);
-    assert_eq!(DType::Fp8E5M2 as u32, 14);
+    assert_eq!(DType::Int4 as u32, 2);
+    assert_eq!(DType::Int8 as u32, 3);
+    assert_eq!(DType::Int16 as u32, 4);
+    assert_eq!(DType::Int32 as u32, 5);
+    assert_eq!(DType::Int48 as u32, 6);
+    assert_eq!(DType::Fp32 as u32, 7);
+    assert_eq!(DType::Fp16 as u32, 8);
+    assert_eq!(DType::Bf16 as u32, 9);
+    assert_eq!(DType::Shape as u32, 10);
+    assert_eq!(DType::Fp8E4M3 as u32, 11);
+    assert_eq!(DType::Fp8E5M2 as u32, 12);
+    assert_eq!(DType::Fp6E2M3 as u32, 13);
+    assert_eq!(DType::Fp6E3M2 as u32, 14);
+    assert_eq!(DType::Fp4E2M1 as u32, 15);
+    assert_eq!(DType::Fp8Ue8M0 as u32, 16);
+    assert_eq!(DType::Int64 as u32, 17);
+    assert_eq!(DType::Mxint8 as u32, 18);
 }
 
 #[test]
 fn dtype_variant_count() {
-    // Ensure all 15 variants are accounted for by matching exhaustively.
-    let all: [DType; 15] = [
+    // Ensure all 19 variants are accounted for by matching exhaustively.
+    let all: [DType; 19] = [
         DType::Unknown,
         DType::Bool,
-        DType::Uint8,
         DType::Int4,
         DType::Int8,
         DType::Int16,
         DType::Int32,
         DType::Int48,
         DType::Fp32,
-        DType::Uint16,
         DType::Fp16,
         DType::Bf16,
         DType::Shape,
         DType::Fp8E4M3,
         DType::Fp8E5M2,
+        DType::Fp6E2M3,
+        DType::Fp6E3M2,
+        DType::Fp4E2M1,
+        DType::Fp8Ue8M0,
+        DType::Int64,
+        DType::Mxint8,
     ];
     for (i, &dt) in all.iter().enumerate() {
         assert_eq!(dt as u32, i as u32);
@@ -51,22 +59,26 @@ fn dtype_variant_count() {
 
 #[test]
 fn dtype_from_generated_roundtrip() {
-    let all: [DType; 15] = [
+    let all: [DType; 19] = [
         DType::Unknown,
         DType::Bool,
-        DType::Uint8,
         DType::Int4,
         DType::Int8,
         DType::Int16,
         DType::Int32,
         DType::Int48,
         DType::Fp32,
-        DType::Uint16,
         DType::Fp16,
         DType::Bf16,
         DType::Shape,
         DType::Fp8E4M3,
         DType::Fp8E5M2,
+        DType::Fp6E2M3,
+        DType::Fp6E3M2,
+        DType::Fp4E2M1,
+        DType::Fp8Ue8M0,
+        DType::Int64,
+        DType::Mxint8,
     ];
     for &dt in &all {
         let gen: generated::DType = dt.into();
@@ -89,7 +101,7 @@ fn dtype_from_generated_unknown_fallback() {
 
 #[test]
 fn op_discriminant_values() {
-    let expected: [(Op, u32); 77] = [
+    let expected: [(Op, u32); 79] = [
         (Op::Unknown, 0),
         (Op::ArgMax, 1),
         (Op::AvgPool2d, 2),
@@ -162,11 +174,13 @@ fn op_discriminant_values() {
         (Op::Custom, 69),
         (Op::CondIf, 70),
         (Op::WhileLoop, 71),
-        (Op::Yield, 72),
-        (Op::Variable, 73),
-        (Op::VariableWrite, 74),
-        (Op::VariableRead, 75),
-        (Op::ConstShape, 76),
+        (Op::Variable, 72),
+        (Op::VariableWrite, 73),
+        (Op::VariableRead, 74),
+        (Op::ConstShape, 75),
+        (Op::MatmulTBlockScaled, 76),
+        (Op::CastFromBlockScaled, 77),
+        (Op::CastToBlockScaled, 78),
     ];
     for &(op, disc) in &expected {
         assert_eq!(op as u32, disc, "Op::{:?} should have discriminant {}", op, disc);
@@ -175,8 +189,8 @@ fn op_discriminant_values() {
 
 #[test]
 fn op_variant_count() {
-    // All 77 variants exist (0..=76).
-    let all: [Op; 77] = [
+    // All 79 variants exist (0..=78).
+    let all: [Op; 79] = [
         Op::Unknown,
         Op::ArgMax,
         Op::AvgPool2d,
@@ -249,18 +263,20 @@ fn op_variant_count() {
         Op::Custom,
         Op::CondIf,
         Op::WhileLoop,
-        Op::Yield,
         Op::Variable,
         Op::VariableWrite,
         Op::VariableRead,
         Op::ConstShape,
+        Op::MatmulTBlockScaled,
+        Op::CastFromBlockScaled,
+        Op::CastToBlockScaled,
     ];
-    assert_eq!(all.len(), 77);
+    assert_eq!(all.len(), 79);
 }
 
 #[test]
 fn op_from_generated_roundtrip() {
-    for disc in 0u32..=76 {
+    for disc in 0u32..=78 {
         let gen = generated::Op(disc);
         let op: Op = gen.into();
         let gen2: generated::Op = op.into();
@@ -385,4 +401,97 @@ fn resize_mode_default_is_unknown() {
 #[test]
 fn nan_propagation_mode_default_is_unknown() {
     assert_eq!(NanPropagationMode::default(), NanPropagationMode::Unknown);
+}
+
+// ---------------------------------------------------------------------------
+// RoundingMode: discriminant values and roundtrip
+// ---------------------------------------------------------------------------
+
+#[test]
+fn rounding_mode_discriminant_values() {
+    assert_eq!(RoundingMode::Unknown as u32, 0);
+    assert_eq!(RoundingMode::SingleRound as u32, 1);
+    assert_eq!(RoundingMode::InexactRound as u32, 2);
+    assert_eq!(RoundingMode::DoubleRound as u32, 3);
+}
+
+#[test]
+fn rounding_mode_variant_count() {
+    let all: [RoundingMode; 4] = [
+        RoundingMode::Unknown,
+        RoundingMode::SingleRound,
+        RoundingMode::InexactRound,
+        RoundingMode::DoubleRound,
+    ];
+    for (i, &m) in all.iter().enumerate() {
+        assert_eq!(m as u32, i as u32);
+    }
+}
+
+#[test]
+fn rounding_mode_from_generated_roundtrip() {
+    for disc in 0u32..=3 {
+        let gen = generated::RoundingMode(disc);
+        let mode: RoundingMode = gen.into();
+        let gen2: generated::RoundingMode = mode.into();
+        assert_eq!(gen2.0, disc, "RoundingMode roundtrip failed for {}", disc);
+    }
+}
+
+#[test]
+fn rounding_mode_from_generated_unknown_fallback() {
+    let gen = generated::RoundingMode(99);
+    let mode: RoundingMode = gen.into();
+    assert_eq!(mode, RoundingMode::Unknown);
+}
+
+#[test]
+fn rounding_mode_default_is_unknown() {
+    assert_eq!(RoundingMode::default(), RoundingMode::Unknown);
+}
+
+// ---------------------------------------------------------------------------
+// BlockSize: discriminant values and roundtrip
+// ---------------------------------------------------------------------------
+
+#[test]
+fn block_size_discriminant_values() {
+    assert_eq!(BlockSize::Unknown as u32, 0);
+    assert_eq!(BlockSize::BlockSize32 as u32, 32);
+}
+
+#[test]
+fn block_size_variant_count() {
+    let all: [BlockSize; 2] = [
+        BlockSize::Unknown,
+        BlockSize::BlockSize32,
+    ];
+    assert_eq!(all.len(), 2);
+}
+
+#[test]
+fn block_size_from_generated_roundtrip() {
+    let cases: [(u32, BlockSize); 2] = [
+        (0, BlockSize::Unknown),
+        (32, BlockSize::BlockSize32),
+    ];
+    for &(disc, expected) in &cases {
+        let gen = generated::BlockSize(disc);
+        let bs: BlockSize = gen.into();
+        assert_eq!(bs, expected);
+        let gen2: generated::BlockSize = bs.into();
+        assert_eq!(gen2.0, disc, "BlockSize roundtrip failed for {}", disc);
+    }
+}
+
+#[test]
+fn block_size_from_generated_unknown_fallback() {
+    let gen = generated::BlockSize(99);
+    let bs: BlockSize = gen.into();
+    assert_eq!(bs, BlockSize::Unknown);
+}
+
+#[test]
+fn block_size_default_is_unknown() {
+    assert_eq!(BlockSize::default(), BlockSize::Unknown);
 }

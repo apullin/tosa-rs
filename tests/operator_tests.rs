@@ -12,12 +12,15 @@ fn roundtrip_op(op: Op, attr: Attribute, inputs: &[&str], outputs: &[&str]) -> T
                     attribute: attr,
                     inputs: inputs.iter().map(|s| s.to_string()).collect(),
                     outputs: outputs.iter().map(|s| s.to_string()).collect(),
+                    ..Default::default()
                 }],
                 tensors: vec![],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
     let bytes = tosa_rs::serialize::serialize(&graph);
     let result = tosa_rs::serialize::deserialize(&bytes).unwrap();
@@ -48,8 +51,6 @@ fn test_avg_pool2d() {
         kernel: vec![3, 3],
         stride: vec![1, 1],
         pad: vec![1, 1, 1, 1],
-        input_zp: 128,
-        output_zp: 0,
         acc_type: DType::Int32,
     });
     let op_out = roundtrip_op(Op::AvgPool2d, attr, &["in"], &["out"]);
@@ -59,8 +60,6 @@ fn test_avg_pool2d() {
             assert_eq!(a.kernel, vec![3, 3]);
             assert_eq!(a.stride, vec![1, 1]);
             assert_eq!(a.pad, vec![1, 1, 1, 1]);
-            assert_eq!(a.input_zp, 128);
-            assert_eq!(a.output_zp, 0);
             assert_eq!(a.acc_type, DType::Int32);
         }
         _ => panic!("wrong attribute type"),
@@ -227,13 +226,10 @@ fn test_clamp() {
 
 #[test]
 fn test_arithmetic_right_shift() {
-    let attr = Attribute::ArithmeticRightShift(ArithmeticRightShiftAttribute { round: true });
+    let attr = Attribute::ArithmeticRightShift(ArithmeticRightShiftAttribute {});
     let op_out = roundtrip_op(Op::ArithmeticRightShift, attr, &["a", "b"], &["out"]);
     assert_eq!(op_out.op, Op::ArithmeticRightShift);
-    match op_out.attribute {
-        Attribute::ArithmeticRightShift(a) => assert!(a.round),
-        _ => panic!("wrong attribute type"),
-    }
+    assert!(matches!(op_out.attribute, Attribute::ArithmeticRightShift(_)));
 }
 
 #[test]
@@ -260,16 +256,10 @@ fn test_minimum() {
 
 #[test]
 fn test_negate() {
-    let attr = Attribute::Negate(NegateAttribute { input1_zp: 128, output_zp: 0 });
+    let attr = Attribute::Negate(NegateAttribute {});
     let op_out = roundtrip_op(Op::Negate, attr, &["in"], &["out"]);
     assert_eq!(op_out.op, Op::Negate);
-    match op_out.attribute {
-        Attribute::Negate(a) => {
-            assert_eq!(a.input1_zp, 128);
-            assert_eq!(a.output_zp, 0);
-        }
-        _ => panic!("wrong attribute type"),
-    }
+    assert!(matches!(op_out.attribute, Attribute::Negate(_)));
 }
 
 #[test]
@@ -357,13 +347,10 @@ fn test_concat() {
 
 #[test]
 fn test_pad() {
-    let attr = Attribute::Pad(PadAttribute { pad_const: vec![0u8; 8] });
+    let attr = Attribute::Pad(PadAttribute {});
     let op_out = roundtrip_op(Op::Pad, attr, &["in", "padding"], &["out"]);
     assert_eq!(op_out.op, Op::Pad);
-    match op_out.attribute {
-        Attribute::Pad(a) => assert_eq!(a.pad_const, vec![0u8; 8]),
-        _ => panic!("wrong attribute type"),
-    }
+    assert!(matches!(op_out.attribute, Attribute::Pad(_)));
 }
 
 #[test]
@@ -402,10 +389,8 @@ fn test_resize() {
 #[test]
 fn test_rescale() {
     let attr = Attribute::Rescale(RescaleAttribute {
-        input_zp: 128,
-        output_zp: 64,
         scale32: true,
-        double_round: true,
+        rounding_mode: RoundingMode::DoubleRound,
         per_channel: true,
         input_unsigned: true,
         output_unsigned: false,
@@ -414,10 +399,8 @@ fn test_rescale() {
     assert_eq!(op_out.op, Op::Rescale);
     match op_out.attribute {
         Attribute::Rescale(a) => {
-            assert_eq!(a.input_zp, 128);
-            assert_eq!(a.output_zp, 64);
             assert!(a.scale32);
-            assert!(a.double_round);
+            assert_eq!(a.rounding_mode, RoundingMode::DoubleRound);
             assert!(a.per_channel);
             assert!(a.input_unsigned);
             assert!(!a.output_unsigned);
@@ -537,7 +520,6 @@ test_empty_attr!(test_scatter, Scatter, Scatter, ScatterAttribute);
 test_empty_attr!(test_cast, Cast, Cast, CastAttribute);
 test_empty_attr!(test_const_op, Const, Const, ConstAttribute);
 test_empty_attr!(test_identity, Identity, Identity, IdentityAttribute);
-test_empty_attr!(test_yield_op, Yield, Yield, YieldAttribute);
 test_empty_attr!(test_variable, Variable, Variable, VariableAttribute);
 test_empty_attr!(test_variable_write, VariableWrite, VariableWrite, VariableWriteAttribute);
 test_empty_attr!(test_variable_read, VariableRead, VariableRead, VariableReadAttribute);
@@ -558,12 +540,15 @@ fn test_operator_with_attribute_none() {
                     attribute: Attribute::None,
                     inputs: vec!["in".into()],
                     outputs: vec!["out".into()],
+                    ..Default::default()
                 }],
                 tensors: vec![],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
     let bytes = tosa_rs::serialize::serialize(&graph);
     let result = tosa_rs::serialize::deserialize(&bytes).unwrap();
@@ -597,14 +582,47 @@ fn test_rescale_default_fields() {
     let op_out = roundtrip_op(Op::Rescale, attr, &["in"], &["out"]);
     match op_out.attribute {
         Attribute::Rescale(a) => {
-            assert_eq!(a.input_zp, 0);
-            assert_eq!(a.output_zp, 0);
             assert!(!a.scale32);
-            assert!(!a.double_round);
+            assert_eq!(a.rounding_mode, RoundingMode::Unknown);
             assert!(!a.per_channel);
             assert!(!a.input_unsigned);
             assert!(!a.output_unsigned);
         }
         _ => panic!("wrong attribute type"),
+    }
+}
+
+// ===== New TOSA 1.0 ops =====
+
+#[test]
+fn test_matmul_t_block_scaled() {
+    let attr = Attribute::MatMulTBlockScaled(MatMulTBlockScaledAttribute { block_size: BlockSize::BlockSize32 });
+    let op_out = roundtrip_op(Op::MatmulTBlockScaled, attr, &["a", "b"], &["c"]);
+    assert_eq!(op_out.op, Op::MatmulTBlockScaled);
+    match op_out.attribute {
+        Attribute::MatMulTBlockScaled(a) => assert_eq!(a.block_size, BlockSize::BlockSize32),
+        _ => panic!("wrong attribute"),
+    }
+}
+
+#[test]
+fn test_cast_from_block_scaled() {
+    let attr = Attribute::CastFromBlockScaled(CastFromBlockScaledAttribute { block_size: BlockSize::BlockSize32 });
+    let op_out = roundtrip_op(Op::CastFromBlockScaled, attr, &["in"], &["out"]);
+    assert_eq!(op_out.op, Op::CastFromBlockScaled);
+    match op_out.attribute {
+        Attribute::CastFromBlockScaled(a) => assert_eq!(a.block_size, BlockSize::BlockSize32),
+        _ => panic!("wrong attribute"),
+    }
+}
+
+#[test]
+fn test_cast_to_block_scaled() {
+    let attr = Attribute::CastToBlockScaled(CastToBlockScaledAttribute { block_size: BlockSize::BlockSize32 });
+    let op_out = roundtrip_op(Op::CastToBlockScaled, attr, &["in"], &["out"]);
+    assert_eq!(op_out.op, Op::CastToBlockScaled);
+    match op_out.attribute {
+        Attribute::CastToBlockScaled(a) => assert_eq!(a.block_size, BlockSize::BlockSize32),
+        _ => panic!("wrong attribute"),
     }
 }

@@ -15,6 +15,8 @@ impl TosaTensor {
             variable: false,
             is_unranked: false,
             variable_name: None,
+            offset: 0,
+            size: 0,
         }
     }
 
@@ -28,6 +30,8 @@ impl TosaTensor {
             variable: false,
             is_unranked: false,
             variable_name: None,
+            offset: 0,
+            size: 0,
         }
     }
 
@@ -41,6 +45,8 @@ impl TosaTensor {
             variable: true,
             is_unranked: false,
             variable_name: Some(var_name.to_string()),
+            offset: 0,
+            size: 0,
         }
     }
 }
@@ -89,6 +95,7 @@ impl TosaGraphBuilder {
         TosaGraph {
             version: self.version,
             regions: self.regions,
+            software_version: None,
         }
     }
 }
@@ -114,6 +121,7 @@ impl RegionBuilder {
             operators: Vec::new(),
             inputs: Vec::new(),
             outputs: Vec::new(),
+            shapes: Vec::new(),
         }
     }
 
@@ -139,6 +147,7 @@ pub struct BlockBuilder {
     operators: Vec<TosaOperator>,
     inputs: Vec<String>,
     outputs: Vec<String>,
+    shapes: Vec<TosaShape>,
 }
 
 impl BlockBuilder {
@@ -186,6 +195,7 @@ impl BlockBuilder {
             attribute,
             inputs: inputs.iter().map(|s| s.to_string()).collect(),
             outputs: outputs.iter().map(|s| s.to_string()).collect(),
+            location: None,
         });
         self
     }
@@ -198,6 +208,7 @@ impl BlockBuilder {
             tensors: self.tensors,
             inputs: self.inputs,
             outputs: self.outputs,
+            shapes: self.shapes,
         };
         self.parent.blocks.push(block);
         self.parent

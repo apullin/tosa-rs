@@ -64,7 +64,14 @@ pub fn deserialize(bytes: &[u8]) -> Result<types::TosaGraph, TosaError> {
         None => Vec::new(),
     };
 
-    Ok(types::TosaGraph { version, regions })
+    let software_version = fb_graph.software_version().map(|sv| types::SoftwareVersion {
+        major: sv._major(),
+        minor: sv._minor(),
+        micro: sv._micro(),
+        modifier: sv._modifier().unwrap_or("").to_string(),
+    });
+
+    Ok(types::TosaGraph { version, regions, software_version })
 }
 
 fn deserialize_region(
@@ -113,12 +120,29 @@ fn deserialize_block(
         None => Vec::new(),
     };
 
+    let shapes = match b.shapes() {
+        Some(s_vec) => {
+            let mut out = Vec::with_capacity(s_vec.len());
+            for i in 0..s_vec.len() {
+                let s = s_vec.get(i);
+                out.push(types::TosaShape {
+                    name: s.name().unwrap_or("").to_string(),
+                    rank: s.rank(),
+                    data: fb_vec_u8(s.data()),
+                });
+            }
+            out
+        }
+        None => Vec::new(),
+    };
+
     Ok(types::TosaBasicBlock {
         name,
         operators,
         tensors,
         inputs,
         outputs,
+        shapes,
     })
 }
 
@@ -131,6 +155,8 @@ fn deserialize_tensor(t: generated::TosaTensor<'_>) -> types::TosaTensor {
         variable: t.variable(),
         is_unranked: t.is_unranked(),
         variable_name: t.variable_name().map(|s| s.to_string()),
+        offset: t.offset(),
+        size: t.size_(),
     }
 }
 
@@ -142,11 +168,16 @@ fn deserialize_operator(
     let outputs = fb_strings_to_vec(op.outputs());
     let attribute = deserialize_attribute(&op)?;
 
+    let location = op.location().map(|loc| types::OpLocation {
+        text: loc.text().unwrap_or("").to_string(),
+    });
+
     Ok(types::TosaOperator {
         op: op_code,
         attribute,
         inputs,
         outputs,
+        location,
     })
 }
 
@@ -175,8 +206,6 @@ fn deserialize_attribute(
                 kernel: fb_vec_i32(a.kernel()),
                 stride: fb_vec_i32(a.stride()),
                 pad: fb_vec_i32(a.pad()),
-                input_zp: a.input_zp(),
-                output_zp: a.output_zp(),
                 acc_type: types::DType::from(a.acc_type()),
             }))
         }
@@ -283,11 +312,9 @@ fn deserialize_attribute(
             Ok(types::Attribute::Add(types::AddAttribute {}))
         }
         generated::Attribute::ArithmeticRightShiftAttribute => {
-            let a = op.attribute_as_arithmetic_right_shift_attribute()
+            let _a = op.attribute_as_arithmetic_right_shift_attribute()
                 .ok_or(TosaError::MissingField("ArithmeticRightShiftAttribute"))?;
-            Ok(types::Attribute::ArithmeticRightShift(types::ArithmeticRightShiftAttribute {
-                round: a.round(),
-            }))
+            Ok(types::Attribute::ArithmeticRightShift(types::ArithmeticRightShiftAttribute {}))
         }
         generated::Attribute::BitwiseAndAttribute => {
             let _a = op.attribute_as_bitwise_and_attribute()
@@ -414,12 +441,9 @@ fn deserialize_attribute(
             Ok(types::Attribute::LogicalNot(types::LogicalNotAttribute {}))
         }
         generated::Attribute::NegateAttribute => {
-            let a = op.attribute_as_negate_attribute()
+            let _a = op.attribute_as_negate_attribute()
                 .ok_or(TosaError::MissingField("NegateAttribute"))?;
-            Ok(types::Attribute::Negate(types::NegateAttribute {
-                input1_zp: a.input1_zp(),
-                output_zp: a.output_zp(),
-            }))
+            Ok(types::Attribute::Negate(types::NegateAttribute {}))
         }
         generated::Attribute::ReciprocalAttribute => {
             let _a = op.attribute_as_reciprocal_attribute()
@@ -508,11 +532,9 @@ fn deserialize_attribute(
             }))
         }
         generated::Attribute::PadAttribute => {
-            let a = op.attribute_as_pad_attribute()
+            let _a = op.attribute_as_pad_attribute()
                 .ok_or(TosaError::MissingField("PadAttribute"))?;
-            Ok(types::Attribute::Pad(types::PadAttribute {
-                pad_const: fb_vec_u8(a.pad_const()),
-            }))
+            Ok(types::Attribute::Pad(types::PadAttribute {}))
         }
         generated::Attribute::ReshapeAttribute => {
             let _a = op.attribute_as_reshape_attribute()
@@ -569,10 +591,8 @@ fn deserialize_attribute(
             let a = op.attribute_as_rescale_attribute()
                 .ok_or(TosaError::MissingField("RescaleAttribute"))?;
             Ok(types::Attribute::Rescale(types::RescaleAttribute {
-                input_zp: a.input_zp(),
-                output_zp: a.output_zp(),
                 scale32: a.scale32(),
-                double_round: a.double_round(),
+                rounding_mode: types::RoundingMode::from(a.rounding_mode()),
                 per_channel: a.per_channel(),
                 input_unsigned: a.input_unsigned(),
                 output_unsigned: a.output_unsigned(),
@@ -613,11 +633,6 @@ fn deserialize_attribute(
                 body_graph: a.body_graph().unwrap_or("").to_string(),
             }))
         }
-        generated::Attribute::YieldAttribute => {
-            let _a = op.attribute_as_yield_attribute()
-                .ok_or(TosaError::MissingField("YieldAttribute"))?;
-            Ok(types::Attribute::Yield(types::YieldAttribute {}))
-        }
         generated::Attribute::VariableAttribute => {
             let _a = op.attribute_as_variable_attribute()
                 .ok_or(TosaError::MissingField("VariableAttribute"))?;
@@ -637,6 +652,27 @@ fn deserialize_attribute(
             let _a = op.attribute_as_const_shape_attribute()
                 .ok_or(TosaError::MissingField("ConstShapeAttribute"))?;
             Ok(types::Attribute::ConstShape(types::ConstShapeAttribute {}))
+        }
+        generated::Attribute::MatMulTBlockScaledAttribute => {
+            let a = op.attribute_as_mat_mul_tblock_scaled_attribute()
+                .ok_or(TosaError::MissingField("MatMulTBlockScaledAttribute"))?;
+            Ok(types::Attribute::MatMulTBlockScaled(types::MatMulTBlockScaledAttribute {
+                block_size: types::BlockSize::from(a.block_size()),
+            }))
+        }
+        generated::Attribute::CastFromBlockScaledAttribute => {
+            let a = op.attribute_as_cast_from_block_scaled_attribute()
+                .ok_or(TosaError::MissingField("CastFromBlockScaledAttribute"))?;
+            Ok(types::Attribute::CastFromBlockScaled(types::CastFromBlockScaledAttribute {
+                block_size: types::BlockSize::from(a.block_size()),
+            }))
+        }
+        generated::Attribute::CastToBlockScaledAttribute => {
+            let a = op.attribute_as_cast_to_block_scaled_attribute()
+                .ok_or(TosaError::MissingField("CastToBlockScaledAttribute"))?;
+            Ok(types::Attribute::CastToBlockScaled(types::CastToBlockScaledAttribute {
+                block_size: types::BlockSize::from(a.block_size()),
+            }))
         }
         _ => Err(TosaError::UnknownAttribute(attr_type.0)),
     }
@@ -670,11 +706,22 @@ pub fn serialize(graph: &types::TosaGraph) -> Vec<u8> {
         },
     );
 
+    let software_version = graph.software_version.as_ref().map(|sv| {
+        let modifier = fbb.create_string(&sv.modifier);
+        generated::SoftwareVersion::create(&mut fbb, &generated::SoftwareVersionArgs {
+            _major: sv.major,
+            _minor: sv.minor,
+            _micro: sv.micro,
+            _modifier: Some(modifier),
+        })
+    });
+
     let tosa_graph = generated::TosaGraph::create(
         &mut fbb,
         &generated::TosaGraphArgs {
             version: Some(version),
             regions: regions_vec,
+            software_version,
         },
     );
 
@@ -731,6 +778,18 @@ fn serialize_block<'a>(
     let inputs = create_string_vector(fbb, &block.inputs);
     let outputs = create_string_vector(fbb, &block.outputs);
 
+    // Build shapes
+    let shape_offsets: Vec<_> = block.shapes.iter().map(|s| {
+        let name = fbb.create_string(&s.name);
+        let data = Some(fbb.create_vector(&s.data));
+        generated::TosaShape::create(fbb, &generated::TosaShapeArgs {
+            name: Some(name),
+            rank: s.rank,
+            data,
+        })
+    }).collect();
+    let shapes_vec = Some(fbb.create_vector(&shape_offsets));
+
     generated::TosaBasicBlock::create(
         fbb,
         &generated::TosaBasicBlockArgs {
@@ -739,6 +798,7 @@ fn serialize_block<'a>(
             tensors: tensors_vec,
             inputs,
             outputs,
+            shapes: shapes_vec,
         },
     )
 }
@@ -773,6 +833,8 @@ fn serialize_tensor<'a>(
             variable: tensor.variable,
             is_unranked: tensor.is_unranked,
             variable_name,
+            offset: tensor.offset,
+            size_: tensor.size,
         },
     )
 }
@@ -786,6 +848,11 @@ fn serialize_operator<'a>(
 
     let (attr_type, attr_offset) = serialize_attribute(fbb, &op.attribute);
 
+    let location = op.location.as_ref().map(|loc| {
+        let text = fbb.create_string(&loc.text);
+        generated::OpLocation::create(fbb, &generated::OpLocationArgs { text: Some(text) })
+    });
+
     generated::TosaOperator::create(
         fbb,
         &generated::TosaOperatorArgs {
@@ -794,6 +861,7 @@ fn serialize_operator<'a>(
             attribute: attr_offset,
             inputs,
             outputs,
+            location,
         },
     )
 }
@@ -829,8 +897,6 @@ fn serialize_attribute<'a>(
                     kernel,
                     stride,
                     pad,
-                    input_zp: a.input_zp,
-                    output_zp: a.output_zp,
                     acc_type: generated::DType::from(a.acc_type),
                 },
             );
@@ -979,11 +1045,11 @@ fn serialize_attribute<'a>(
             (generated::Attribute::AddAttribute, Some(o.as_union_value()))
         }
 
-        types::Attribute::ArithmeticRightShift(a) => {
+        types::Attribute::ArithmeticRightShift(_) => {
             let o = generated::ArithmeticRightShiftAttribute::create(
                 fbb,
                 &generated::ArithmeticRightShiftAttributeArgs {
-                    round: a.round,
+                    round: false,
                 },
             );
             (generated::Attribute::ArithmeticRightShiftAttribute, Some(o.as_union_value()))
@@ -1119,13 +1185,10 @@ fn serialize_attribute<'a>(
             (generated::Attribute::LogicalNotAttribute, Some(o.as_union_value()))
         }
 
-        types::Attribute::Negate(a) => {
+        types::Attribute::Negate(_) => {
             let o = generated::NegateAttribute::create(
                 fbb,
-                &generated::NegateAttributeArgs {
-                    input1_zp: a.input1_zp,
-                    output_zp: a.output_zp,
-                },
+                &generated::NegateAttributeArgs {},
             );
             (generated::Attribute::NegateAttribute, Some(o.as_union_value()))
         }
@@ -1227,11 +1290,10 @@ fn serialize_attribute<'a>(
             (generated::Attribute::ConcatAttribute, Some(o.as_union_value()))
         }
 
-        types::Attribute::Pad(a) => {
-            let pad_const = Some(fbb.create_vector(&a.pad_const));
+        types::Attribute::Pad(_) => {
             let o = generated::PadAttribute::create(
                 fbb,
-                &generated::PadAttributeArgs { pad_const },
+                &generated::PadAttributeArgs {},
             );
             (generated::Attribute::PadAttribute, Some(o.as_union_value()))
         }
@@ -1297,10 +1359,8 @@ fn serialize_attribute<'a>(
             let o = generated::RescaleAttribute::create(
                 fbb,
                 &generated::RescaleAttributeArgs {
-                    input_zp: a.input_zp,
-                    output_zp: a.output_zp,
                     scale32: a.scale32,
-                    double_round: a.double_round,
+                    rounding_mode: generated::RoundingMode::from(a.rounding_mode),
                     per_channel: a.per_channel,
                     input_unsigned: a.input_unsigned,
                     output_unsigned: a.output_unsigned,
@@ -1360,11 +1420,6 @@ fn serialize_attribute<'a>(
             (generated::Attribute::WhileLoopAttribute, Some(o.as_union_value()))
         }
 
-        types::Attribute::Yield(_) => {
-            let o = generated::YieldAttribute::create(fbb, &generated::YieldAttributeArgs {});
-            (generated::Attribute::YieldAttribute, Some(o.as_union_value()))
-        }
-
         types::Attribute::Variable(_) => {
             let o = generated::VariableAttribute::create(fbb, &generated::VariableAttributeArgs {});
             (generated::Attribute::VariableAttribute, Some(o.as_union_value()))
@@ -1383,6 +1438,36 @@ fn serialize_attribute<'a>(
         types::Attribute::ConstShape(_) => {
             let o = generated::ConstShapeAttribute::create(fbb, &generated::ConstShapeAttributeArgs {});
             (generated::Attribute::ConstShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::MatMulTBlockScaled(a) => {
+            let o = generated::MatMulTBlockScaledAttribute::create(
+                fbb,
+                &generated::MatMulTBlockScaledAttributeArgs {
+                    block_size: generated::BlockSize::from(a.block_size),
+                },
+            );
+            (generated::Attribute::MatMulTBlockScaledAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::CastFromBlockScaled(a) => {
+            let o = generated::CastFromBlockScaledAttribute::create(
+                fbb,
+                &generated::CastFromBlockScaledAttributeArgs {
+                    block_size: generated::BlockSize::from(a.block_size),
+                },
+            );
+            (generated::Attribute::CastFromBlockScaledAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::CastToBlockScaled(a) => {
+            let o = generated::CastToBlockScaledAttribute::create(
+                fbb,
+                &generated::CastToBlockScaledAttributeArgs {
+                    block_size: generated::BlockSize::from(a.block_size),
+                },
+            );
+            (generated::Attribute::CastToBlockScaledAttribute, Some(o.as_union_value()))
         }
     }
 }

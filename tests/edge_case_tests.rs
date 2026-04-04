@@ -23,6 +23,7 @@ fn minimal_graph() -> TosaGraph {
                     attribute: Attribute::Add(AddAttribute {}),
                     inputs: vec!["input0".to_string(), "input1".to_string()],
                     outputs: vec!["output0".to_string()],
+                    ..Default::default()
                 }],
                 tensors: vec![TosaTensor {
                     name: "input0".to_string(),
@@ -32,11 +33,14 @@ fn minimal_graph() -> TosaGraph {
                     variable: false,
                     is_unranked: false,
                     variable_name: None,
+                    ..Default::default()
                 }],
                 inputs: vec!["input0".to_string(), "input1".to_string()],
                 outputs: vec!["output0".to_string()],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     }
 }
 
@@ -128,16 +132,19 @@ fn large_tensor_data_roundtrip() {
                 tensors: vec![TosaTensor {
                     name: "big_tensor".to_string(),
                     shape: vec![1, data_size as i32],
-                    dtype: DType::Uint8,
+                    dtype: DType::Int8,
                     data: Some(large_data.clone()),
                     variable: false,
                     is_unranked: false,
                     variable_name: None,
+                    ..Default::default()
                 }],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
@@ -164,6 +171,7 @@ fn many_regions_roundtrip() {
                 tensors: vec![],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         })
         .collect();
@@ -171,6 +179,7 @@ fn many_regions_roundtrip() {
     let graph = TosaGraph {
         version: Version::default(),
         regions,
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
@@ -198,6 +207,7 @@ fn many_operators_in_block_roundtrip() {
             attribute: Attribute::Add(AddAttribute {}),
             inputs: vec![format!("in_{}", i)],
             outputs: vec![format!("out_{}", i)],
+            ..Default::default()
         })
         .collect();
 
@@ -211,8 +221,10 @@ fn many_operators_in_block_roundtrip() {
                 tensors: vec![],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
@@ -243,12 +255,15 @@ fn operator_empty_inputs_outputs_roundtrip() {
                     attribute: Attribute::Const(ConstAttribute {}),
                     inputs: vec![],
                     outputs: vec![],
+                    ..Default::default()
                 }],
                 tensors: vec![],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
@@ -281,11 +296,14 @@ fn tensor_empty_name_roundtrip() {
                     variable: false,
                     is_unranked: false,
                     variable_name: None,
+                    ..Default::default()
                 }],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
@@ -306,32 +324,35 @@ fn unicode_names_roundtrip() {
     let graph = TosaGraph {
         version: Version::default(),
         regions: vec![TosaRegion {
-            name: "領域".to_string(),
+            name: "\u{9818}\u{57DF}".to_string(),
             blocks: vec![TosaBasicBlock {
-                name: "блок".to_string(),
+                name: "\u{0431}\u{043B}\u{043E}\u{043A}".to_string(),
                 operators: vec![],
                 tensors: vec![TosaTensor {
-                    name: "输入".to_string(),
+                    name: "\u{8F93}\u{5165}".to_string(),
                     shape: vec![1],
                     dtype: DType::Fp32,
                     data: None,
                     variable: false,
                     is_unranked: false,
                     variable_name: None,
+                    ..Default::default()
                 }],
-                inputs: vec!["输入".to_string()],
+                inputs: vec!["\u{8F93}\u{5165}".to_string()],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
     let round = deserialize(&bytes).expect("deserialize unicode names");
 
-    assert_eq!(round.regions[0].name, "領域");
-    assert_eq!(round.regions[0].blocks[0].name, "блок");
-    assert_eq!(round.regions[0].blocks[0].tensors[0].name, "输入");
-    assert_eq!(round.regions[0].blocks[0].inputs, vec!["输入".to_string()]);
+    assert_eq!(round.regions[0].name, "\u{9818}\u{57DF}");
+    assert_eq!(round.regions[0].blocks[0].name, "\u{0431}\u{043B}\u{043E}\u{043A}");
+    assert_eq!(round.regions[0].blocks[0].tensors[0].name, "\u{8F93}\u{5165}");
+    assert_eq!(round.regions[0].blocks[0].inputs, vec!["\u{8F93}\u{5165}".to_string()]);
 }
 
 // ===========================================================================
@@ -359,12 +380,15 @@ fn clamp_attribute_byte_patterns_roundtrip() {
                     }),
                     inputs: vec!["x".to_string()],
                     outputs: vec!["y".to_string()],
+                    ..Default::default()
                 }],
                 tensors: vec![],
                 inputs: vec!["x".to_string()],
                 outputs: vec!["y".to_string()],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
@@ -410,12 +434,15 @@ fn custom_attribute_all_fields_roundtrip() {
                     }),
                     inputs: vec!["a".to_string(), "b".to_string(), "c".to_string()],
                     outputs: vec!["result".to_string()],
+                    ..Default::default()
                 }],
                 tensors: vec![],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
@@ -455,12 +482,15 @@ fn cond_if_attribute_graph_names_roundtrip() {
                     }),
                     inputs: vec!["cond".to_string(), "input".to_string()],
                     outputs: vec!["result".to_string()],
+                    ..Default::default()
                 }],
                 tensors: vec![],
                 inputs: vec!["cond".to_string(), "input".to_string()],
                 outputs: vec!["result".to_string()],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
@@ -493,12 +523,15 @@ fn while_loop_attribute_graph_names_roundtrip() {
                     }),
                     inputs: vec!["init".to_string()],
                     outputs: vec!["final".to_string()],
+                    ..Default::default()
                 }],
                 tensors: vec![],
                 inputs: vec!["init".to_string()],
                 outputs: vec!["final".to_string()],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
@@ -549,12 +582,15 @@ fn clamp_attribute_8byte_convention() {
                     }),
                     inputs: vec!["x".to_string()],
                     outputs: vec!["y".to_string()],
+                    ..Default::default()
                 }],
                 tensors: vec![],
                 inputs: vec![],
                 outputs: vec![],
+                ..Default::default()
             }],
         }],
+        ..Default::default()
     };
 
     let bytes = serialize(&graph);
