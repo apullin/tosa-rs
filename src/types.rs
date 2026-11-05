@@ -235,6 +235,25 @@ pub enum Op {
     MatmulTBlockScaled = 76,
     CastFromBlockScaled = 77,
     CastToBlockScaled = 78,
+    // TOSA 1.1
+    Dim = 79,
+    ConcatShape = 80,
+    AddShape = 81,
+    SubShape = 82,
+    MulShape = 83,
+    SliceShape = 84,
+    Exp2Shape = 85,
+    Log2CeilShape = 86,
+    Log2FloorShape = 87,
+    MaxShape = 88,
+    MinShape = 89,
+    ModShape = 90,
+    DivCeilShape = 91,
+    DivFloorShape = 92,
+    AssertEqualShape = 93,
+    Conv2dBlockScaled = 94,
+    MaxPool2dAdaptive = 95,
+    AvgPool2dAdaptive = 96,
 }
 
 impl From<generated::Op> for Op {
@@ -319,6 +338,24 @@ impl From<generated::Op> for Op {
             76 => Op::MatmulTBlockScaled,
             77 => Op::CastFromBlockScaled,
             78 => Op::CastToBlockScaled,
+            79 => Op::Dim,
+            80 => Op::ConcatShape,
+            81 => Op::AddShape,
+            82 => Op::SubShape,
+            83 => Op::MulShape,
+            84 => Op::SliceShape,
+            85 => Op::Exp2Shape,
+            86 => Op::Log2CeilShape,
+            87 => Op::Log2FloorShape,
+            88 => Op::MaxShape,
+            89 => Op::MinShape,
+            90 => Op::ModShape,
+            91 => Op::DivCeilShape,
+            92 => Op::DivFloorShape,
+            93 => Op::AssertEqualShape,
+            94 => Op::Conv2dBlockScaled,
+            95 => Op::MaxPool2dAdaptive,
+            96 => Op::AvgPool2dAdaptive,
             _ => Op::Unknown,
         }
     }
@@ -331,7 +368,7 @@ impl From<Op> for generated::Op {
 }
 
 // ---------------------------------------------------------------------------
-// Attribute structs (all 78)
+// Attribute structs (78 from TOSA 1.0, 18 more in 1.1)
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
@@ -425,7 +462,9 @@ pub struct TanhAttribute {}
 pub struct AddAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct ArithmeticRightShiftAttribute {}
+pub struct ArithmeticRightShiftAttribute {
+    pub round: bool,
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct BitwiseAndAttribute {}
@@ -465,9 +504,7 @@ pub struct MinimumAttribute {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct MulAttribute {
-    pub shift: i32,
-}
+pub struct MulAttribute {}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct PowAttribute {}
@@ -663,6 +700,72 @@ pub struct CastToBlockScaledAttribute {
     pub block_size: BlockSize,
 }
 
+// TOSA 1.1
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct DimAttribute {
+    pub axis: i32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct ConcatShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct AddShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct SubShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct MulShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct SliceShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct Exp2ShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct Log2CeilShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct Log2FloorShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct MaxShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct MinShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct ModShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct DivCeilShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct DivFloorShapeAttribute {}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct AssertEqualShapeAttribute {
+    pub allow_broadcast: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct Conv2dBlockScaledAttribute {
+    pub block_size: BlockSize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct MaxPool2dAdaptiveAttribute {
+    pub nan_mode: NanPropagationMode,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct AvgPool2dAdaptiveAttribute {
+    pub acc_type: DType,
+}
+
 // ---------------------------------------------------------------------------
 // Attribute union enum
 // ---------------------------------------------------------------------------
@@ -747,6 +850,24 @@ pub enum Attribute {
     MatMulTBlockScaled(MatMulTBlockScaledAttribute),
     CastFromBlockScaled(CastFromBlockScaledAttribute),
     CastToBlockScaled(CastToBlockScaledAttribute),
+    Dim(DimAttribute),
+    ConcatShape(ConcatShapeAttribute),
+    AddShape(AddShapeAttribute),
+    SubShape(SubShapeAttribute),
+    MulShape(MulShapeAttribute),
+    SliceShape(SliceShapeAttribute),
+    Exp2Shape(Exp2ShapeAttribute),
+    Log2CeilShape(Log2CeilShapeAttribute),
+    Log2FloorShape(Log2FloorShapeAttribute),
+    MaxShape(MaxShapeAttribute),
+    MinShape(MinShapeAttribute),
+    ModShape(ModShapeAttribute),
+    DivCeilShape(DivCeilShapeAttribute),
+    DivFloorShape(DivFloorShapeAttribute),
+    AssertEqualShape(AssertEqualShapeAttribute),
+    Conv2dBlockScaled(Conv2dBlockScaledAttribute),
+    MaxPool2dAdaptive(MaxPool2dAdaptiveAttribute),
+    AvgPool2dAdaptive(AvgPool2dAdaptiveAttribute),
     #[default]
     None,
 }
@@ -837,6 +958,24 @@ impl Attribute {
             Attribute::MatMulTBlockScaled(_) => 76,
             Attribute::CastFromBlockScaled(_) => 77,
             Attribute::CastToBlockScaled(_) => 78,
+            Attribute::Dim(_) => 79,
+            Attribute::ConcatShape(_) => 80,
+            Attribute::AddShape(_) => 81,
+            Attribute::SubShape(_) => 82,
+            Attribute::MulShape(_) => 83,
+            Attribute::SliceShape(_) => 84,
+            Attribute::Exp2Shape(_) => 85,
+            Attribute::Log2CeilShape(_) => 86,
+            Attribute::Log2FloorShape(_) => 87,
+            Attribute::MaxShape(_) => 88,
+            Attribute::MinShape(_) => 89,
+            Attribute::ModShape(_) => 90,
+            Attribute::DivCeilShape(_) => 91,
+            Attribute::DivFloorShape(_) => 92,
+            Attribute::AssertEqualShape(_) => 93,
+            Attribute::Conv2dBlockScaled(_) => 94,
+            Attribute::MaxPool2dAdaptive(_) => 95,
+            Attribute::AvgPool2dAdaptive(_) => 96,
         }
     }
 }

@@ -226,10 +226,15 @@ fn test_clamp() {
 
 #[test]
 fn test_arithmetic_right_shift() {
-    let attr = Attribute::ArithmeticRightShift(ArithmeticRightShiftAttribute {});
-    let op_out = roundtrip_op(Op::ArithmeticRightShift, attr, &["a", "b"], &["out"]);
-    assert_eq!(op_out.op, Op::ArithmeticRightShift);
-    assert!(matches!(op_out.attribute, Attribute::ArithmeticRightShift(_)));
+    for round in [false, true] {
+        let attr = Attribute::ArithmeticRightShift(ArithmeticRightShiftAttribute { round });
+        let op_out = roundtrip_op(Op::ArithmeticRightShift, attr, &["a", "b"], &["out"]);
+        assert_eq!(op_out.op, Op::ArithmeticRightShift);
+        assert_eq!(
+            op_out.attribute,
+            Attribute::ArithmeticRightShift(ArithmeticRightShiftAttribute { round })
+        );
+    }
 }
 
 #[test]
@@ -624,5 +629,34 @@ fn test_cast_to_block_scaled() {
     match op_out.attribute {
         Attribute::CastToBlockScaled(a) => assert_eq!(a.block_size, BlockSize::BlockSize32),
         _ => panic!("wrong attribute"),
+    }
+}
+
+#[test]
+fn test_tosa_1_1_ops() {
+    for (op, attr) in [
+        (Op::Dim, Attribute::Dim(DimAttribute { axis: 2 })),
+        (Op::ConcatShape, Attribute::ConcatShape(ConcatShapeAttribute {})),
+        (Op::AddShape, Attribute::AddShape(AddShapeAttribute {})),
+        (Op::SubShape, Attribute::SubShape(SubShapeAttribute {})),
+        (Op::MulShape, Attribute::MulShape(MulShapeAttribute {})),
+        (Op::SliceShape, Attribute::SliceShape(SliceShapeAttribute {})),
+        (Op::Exp2Shape, Attribute::Exp2Shape(Exp2ShapeAttribute {})),
+        (Op::Log2CeilShape, Attribute::Log2CeilShape(Log2CeilShapeAttribute {})),
+        (Op::Log2FloorShape, Attribute::Log2FloorShape(Log2FloorShapeAttribute {})),
+        (Op::MaxShape, Attribute::MaxShape(MaxShapeAttribute {})),
+        (Op::MinShape, Attribute::MinShape(MinShapeAttribute {})),
+        (Op::ModShape, Attribute::ModShape(ModShapeAttribute {})),
+        (Op::DivCeilShape, Attribute::DivCeilShape(DivCeilShapeAttribute {})),
+        (Op::DivFloorShape, Attribute::DivFloorShape(DivFloorShapeAttribute {})),
+        (Op::AssertEqualShape, Attribute::AssertEqualShape(AssertEqualShapeAttribute { allow_broadcast: true })),
+        (Op::Conv2dBlockScaled, Attribute::Conv2dBlockScaled(Conv2dBlockScaledAttribute { block_size: BlockSize::BlockSize32 })),
+        (Op::MaxPool2dAdaptive, Attribute::MaxPool2dAdaptive(MaxPool2dAdaptiveAttribute { nan_mode: NanPropagationMode::Ignore })),
+        (Op::AvgPool2dAdaptive, Attribute::AvgPool2dAdaptive(AvgPool2dAdaptiveAttribute { acc_type: DType::Int32 })),
+    ] {
+        let op_out = roundtrip_op(op, attr.clone(), &["a", "b"], &["out"]);
+        assert_eq!(op_out.op, op);
+        assert_eq!(op_out.attribute, attr);
+        assert_eq!(attr.union_type() as u32, op as u32);
     }
 }

@@ -1,10 +1,10 @@
 # tosa-rs
 
-Rust serialization for [TOSA](https://www.mlplatform.org/tosa/) (Tensor Operator Set Architecture) FlatBuffers. Targets TOSA 1.0.
+Rust serialization for [TOSA](https://www.mlplatform.org/tosa/) (Tensor Operator Set Architecture) FlatBuffers. Targets TOSA 1.0 and 1.1.
 
 ## Usage
 
-Requires `flatc` on PATH (`brew install flatbuffers` / `apt install flatbuffers-compiler`).
+Building needs no `flatc`: the generated FlatBuffers code is committed in `src/generated/`.
 
 ```toml
 [dependencies]
@@ -33,7 +33,17 @@ let roundtripped = deserialize(&bytes).unwrap();
 
 ## Coverage
 
-79 ops, 79 attribute types, 19 data types, 6 enums. 169 tests.
+97 ops, 97 attribute types, 19 data types, 6 enums. 170 tests.
+
+## Schemas
+
+`docs/tosa.fbs` is the TOSA 1.0 schema and `docs/tosa_1.1.fbs` the 1.1 schema. TOSA 1.1 only appends
+ops and attribute tables to 1.0, so the code generated from the 1.1 schema reads and writes 1.0
+graphs too. The version a graph declares comes from `TosaGraph::version`.
+
+After changing a schema, regenerate `src/generated/tosa_generated.rs` with
+`scripts/regen_generated.sh`. It insists on flatc 25.2.10, so the generated code only changes when a
+schema does; set `FLATC=/path/to/flatc` if that isn't the one on PATH.
 
 ## License
 

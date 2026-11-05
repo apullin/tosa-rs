@@ -141,8 +141,10 @@ fn tensor_with_data_payload() {
         .data
         .as_ref()
         .unwrap()
-        .chunks_exact(4)
-        .map(|c| f32::from_le_bytes(c.try_into().unwrap()))
+        .as_chunks::<4>()
+        .0
+        .iter()
+        .map(|c| f32::from_le_bytes(*c))
         .collect();
     assert_eq!(recovered, vec![1.0, 2.0, 3.0, 4.0]);
 }

@@ -81,8 +81,8 @@ fn dtype_from_generated_roundtrip() {
         DType::Mxint8,
     ];
     for &dt in &all {
-        let gen: generated::DType = dt.into();
-        let back: DType = gen.into();
+        let r#gen: generated::DType = dt.into();
+        let back: DType = r#gen.into();
         assert_eq!(back, dt, "DType roundtrip failed for {:?}", dt);
     }
 }
@@ -90,8 +90,8 @@ fn dtype_from_generated_roundtrip() {
 #[test]
 fn dtype_from_generated_unknown_fallback() {
     // Out-of-range generated values should map to Unknown.
-    let gen = generated::DType(999);
-    let dt: DType = gen.into();
+    let r#gen = generated::DType(999);
+    let dt: DType = r#gen.into();
     assert_eq!(dt, DType::Unknown);
 }
 
@@ -101,7 +101,7 @@ fn dtype_from_generated_unknown_fallback() {
 
 #[test]
 fn op_discriminant_values() {
-    let expected: [(Op, u32); 79] = [
+    let expected: [(Op, u32); 97] = [
         (Op::Unknown, 0),
         (Op::ArgMax, 1),
         (Op::AvgPool2d, 2),
@@ -181,6 +181,24 @@ fn op_discriminant_values() {
         (Op::MatmulTBlockScaled, 76),
         (Op::CastFromBlockScaled, 77),
         (Op::CastToBlockScaled, 78),
+        (Op::Dim, 79),
+        (Op::ConcatShape, 80),
+        (Op::AddShape, 81),
+        (Op::SubShape, 82),
+        (Op::MulShape, 83),
+        (Op::SliceShape, 84),
+        (Op::Exp2Shape, 85),
+        (Op::Log2CeilShape, 86),
+        (Op::Log2FloorShape, 87),
+        (Op::MaxShape, 88),
+        (Op::MinShape, 89),
+        (Op::ModShape, 90),
+        (Op::DivCeilShape, 91),
+        (Op::DivFloorShape, 92),
+        (Op::AssertEqualShape, 93),
+        (Op::Conv2dBlockScaled, 94),
+        (Op::MaxPool2dAdaptive, 95),
+        (Op::AvgPool2dAdaptive, 96),
     ];
     for &(op, disc) in &expected {
         assert_eq!(op as u32, disc, "Op::{:?} should have discriminant {}", op, disc);
@@ -189,8 +207,8 @@ fn op_discriminant_values() {
 
 #[test]
 fn op_variant_count() {
-    // All 79 variants exist (0..=78).
-    let all: [Op; 79] = [
+    // All 97 variants exist (0..=96).
+    let all: [Op; 97] = [
         Op::Unknown,
         Op::ArgMax,
         Op::AvgPool2d,
@@ -270,15 +288,33 @@ fn op_variant_count() {
         Op::MatmulTBlockScaled,
         Op::CastFromBlockScaled,
         Op::CastToBlockScaled,
+        Op::Dim,
+        Op::ConcatShape,
+        Op::AddShape,
+        Op::SubShape,
+        Op::MulShape,
+        Op::SliceShape,
+        Op::Exp2Shape,
+        Op::Log2CeilShape,
+        Op::Log2FloorShape,
+        Op::MaxShape,
+        Op::MinShape,
+        Op::ModShape,
+        Op::DivCeilShape,
+        Op::DivFloorShape,
+        Op::AssertEqualShape,
+        Op::Conv2dBlockScaled,
+        Op::MaxPool2dAdaptive,
+        Op::AvgPool2dAdaptive,
     ];
-    assert_eq!(all.len(), 79);
+    assert_eq!(all.len(), 97);
 }
 
 #[test]
 fn op_from_generated_roundtrip() {
-    for disc in 0u32..=78 {
-        let gen = generated::Op(disc);
-        let op: Op = gen.into();
+    for disc in 0u32..=96 {
+        let r#gen = generated::Op(disc);
+        let op: Op = r#gen.into();
         let gen2: generated::Op = op.into();
         assert_eq!(
             gen2.0, disc,
@@ -290,8 +326,8 @@ fn op_from_generated_roundtrip() {
 
 #[test]
 fn op_from_generated_unknown_fallback() {
-    let gen = generated::Op(9999);
-    let op: Op = gen.into();
+    let r#gen = generated::Op(9999);
+    let op: Op = r#gen.into();
     assert_eq!(op, Op::Unknown);
 }
 
@@ -321,8 +357,8 @@ fn resize_mode_variant_count() {
 #[test]
 fn resize_mode_from_generated_roundtrip() {
     for disc in 0u32..=2 {
-        let gen = generated::ResizeMode(disc);
-        let mode: ResizeMode = gen.into();
+        let r#gen = generated::ResizeMode(disc);
+        let mode: ResizeMode = r#gen.into();
         let gen2: generated::ResizeMode = mode.into();
         assert_eq!(gen2.0, disc, "ResizeMode roundtrip failed for {}", disc);
     }
@@ -330,8 +366,8 @@ fn resize_mode_from_generated_roundtrip() {
 
 #[test]
 fn resize_mode_from_generated_unknown_fallback() {
-    let gen = generated::ResizeMode(42);
-    let mode: ResizeMode = gen.into();
+    let r#gen = generated::ResizeMode(42);
+    let mode: ResizeMode = r#gen.into();
     assert_eq!(mode, ResizeMode::Unknown);
 }
 
@@ -361,8 +397,8 @@ fn nan_propagation_mode_variant_count() {
 #[test]
 fn nan_propagation_mode_from_generated_roundtrip() {
     for disc in 0u32..=2 {
-        let gen = generated::NanPropagationMode(disc);
-        let mode: NanPropagationMode = gen.into();
+        let r#gen = generated::NanPropagationMode(disc);
+        let mode: NanPropagationMode = r#gen.into();
         let gen2: generated::NanPropagationMode = mode.into();
         assert_eq!(
             gen2.0, disc,
@@ -374,8 +410,8 @@ fn nan_propagation_mode_from_generated_roundtrip() {
 
 #[test]
 fn nan_propagation_mode_from_generated_unknown_fallback() {
-    let gen = generated::NanPropagationMode(100);
-    let mode: NanPropagationMode = gen.into();
+    let r#gen = generated::NanPropagationMode(100);
+    let mode: NanPropagationMode = r#gen.into();
     assert_eq!(mode, NanPropagationMode::Unknown);
 }
 
@@ -431,8 +467,8 @@ fn rounding_mode_variant_count() {
 #[test]
 fn rounding_mode_from_generated_roundtrip() {
     for disc in 0u32..=3 {
-        let gen = generated::RoundingMode(disc);
-        let mode: RoundingMode = gen.into();
+        let r#gen = generated::RoundingMode(disc);
+        let mode: RoundingMode = r#gen.into();
         let gen2: generated::RoundingMode = mode.into();
         assert_eq!(gen2.0, disc, "RoundingMode roundtrip failed for {}", disc);
     }
@@ -440,8 +476,8 @@ fn rounding_mode_from_generated_roundtrip() {
 
 #[test]
 fn rounding_mode_from_generated_unknown_fallback() {
-    let gen = generated::RoundingMode(99);
-    let mode: RoundingMode = gen.into();
+    let r#gen = generated::RoundingMode(99);
+    let mode: RoundingMode = r#gen.into();
     assert_eq!(mode, RoundingMode::Unknown);
 }
 
@@ -476,8 +512,8 @@ fn block_size_from_generated_roundtrip() {
         (32, BlockSize::BlockSize32),
     ];
     for &(disc, expected) in &cases {
-        let gen = generated::BlockSize(disc);
-        let bs: BlockSize = gen.into();
+        let r#gen = generated::BlockSize(disc);
+        let bs: BlockSize = r#gen.into();
         assert_eq!(bs, expected);
         let gen2: generated::BlockSize = bs.into();
         assert_eq!(gen2.0, disc, "BlockSize roundtrip failed for {}", disc);
@@ -486,8 +522,8 @@ fn block_size_from_generated_roundtrip() {
 
 #[test]
 fn block_size_from_generated_unknown_fallback() {
-    let gen = generated::BlockSize(99);
-    let bs: BlockSize = gen.into();
+    let r#gen = generated::BlockSize(99);
+    let bs: BlockSize = r#gen.into();
     assert_eq!(bs, BlockSize::Unknown);
 }
 

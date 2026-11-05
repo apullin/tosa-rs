@@ -156,7 +156,7 @@ fn deserialize_tensor(t: generated::TosaTensor<'_>) -> types::TosaTensor {
         is_unranked: t.is_unranked(),
         variable_name: t.variable_name().map(|s| s.to_string()),
         offset: t.offset(),
-        size: t.size_(),
+        size: t.size(),
     }
 }
 
@@ -312,9 +312,11 @@ fn deserialize_attribute(
             Ok(types::Attribute::Add(types::AddAttribute {}))
         }
         generated::Attribute::ArithmeticRightShiftAttribute => {
-            let _a = op.attribute_as_arithmetic_right_shift_attribute()
+            let a = op.attribute_as_arithmetic_right_shift_attribute()
                 .ok_or(TosaError::MissingField("ArithmeticRightShiftAttribute"))?;
-            Ok(types::Attribute::ArithmeticRightShift(types::ArithmeticRightShiftAttribute {}))
+            Ok(types::Attribute::ArithmeticRightShift(types::ArithmeticRightShiftAttribute {
+                round: a.round(),
+            }))
         }
         generated::Attribute::BitwiseAndAttribute => {
             let _a = op.attribute_as_bitwise_and_attribute()
@@ -378,9 +380,7 @@ fn deserialize_attribute(
         generated::Attribute::MulAttribute => {
             let _a = op.attribute_as_mul_attribute()
                 .ok_or(TosaError::MissingField("MulAttribute"))?;
-            Ok(types::Attribute::Mul(types::MulAttribute {
-                shift: 0,
-            }))
+            Ok(types::Attribute::Mul(types::MulAttribute {}))
         }
         generated::Attribute::PowAttribute => {
             let _a = op.attribute_as_pow_attribute()
@@ -676,6 +676,106 @@ fn deserialize_attribute(
                 block_size: types::BlockSize::from(a.block_size()),
             }))
         }
+        generated::Attribute::DimAttribute => {
+            let a = op.attribute_as_dim_attribute()
+                .ok_or(TosaError::MissingField("DimAttribute"))?;
+            Ok(types::Attribute::Dim(types::DimAttribute {
+                axis: a.axis(),
+            }))
+        }
+        generated::Attribute::ConcatShapeAttribute => {
+            let _a = op.attribute_as_concat_shape_attribute()
+                .ok_or(TosaError::MissingField("ConcatShapeAttribute"))?;
+            Ok(types::Attribute::ConcatShape(types::ConcatShapeAttribute {}))
+        }
+        generated::Attribute::AddShapeAttribute => {
+            let _a = op.attribute_as_add_shape_attribute()
+                .ok_or(TosaError::MissingField("AddShapeAttribute"))?;
+            Ok(types::Attribute::AddShape(types::AddShapeAttribute {}))
+        }
+        generated::Attribute::SubShapeAttribute => {
+            let _a = op.attribute_as_sub_shape_attribute()
+                .ok_or(TosaError::MissingField("SubShapeAttribute"))?;
+            Ok(types::Attribute::SubShape(types::SubShapeAttribute {}))
+        }
+        generated::Attribute::MulShapeAttribute => {
+            let _a = op.attribute_as_mul_shape_attribute()
+                .ok_or(TosaError::MissingField("MulShapeAttribute"))?;
+            Ok(types::Attribute::MulShape(types::MulShapeAttribute {}))
+        }
+        generated::Attribute::SliceShapeAttribute => {
+            let _a = op.attribute_as_slice_shape_attribute()
+                .ok_or(TosaError::MissingField("SliceShapeAttribute"))?;
+            Ok(types::Attribute::SliceShape(types::SliceShapeAttribute {}))
+        }
+        generated::Attribute::Exp2ShapeAttribute => {
+            let _a = op.attribute_as_exp_2_shape_attribute()
+                .ok_or(TosaError::MissingField("Exp2ShapeAttribute"))?;
+            Ok(types::Attribute::Exp2Shape(types::Exp2ShapeAttribute {}))
+        }
+        generated::Attribute::Log2CeilShapeAttribute => {
+            let _a = op.attribute_as_log_2_ceil_shape_attribute()
+                .ok_or(TosaError::MissingField("Log2CeilShapeAttribute"))?;
+            Ok(types::Attribute::Log2CeilShape(types::Log2CeilShapeAttribute {}))
+        }
+        generated::Attribute::Log2FloorShapeAttribute => {
+            let _a = op.attribute_as_log_2_floor_shape_attribute()
+                .ok_or(TosaError::MissingField("Log2FloorShapeAttribute"))?;
+            Ok(types::Attribute::Log2FloorShape(types::Log2FloorShapeAttribute {}))
+        }
+        generated::Attribute::MaxShapeAttribute => {
+            let _a = op.attribute_as_max_shape_attribute()
+                .ok_or(TosaError::MissingField("MaxShapeAttribute"))?;
+            Ok(types::Attribute::MaxShape(types::MaxShapeAttribute {}))
+        }
+        generated::Attribute::MinShapeAttribute => {
+            let _a = op.attribute_as_min_shape_attribute()
+                .ok_or(TosaError::MissingField("MinShapeAttribute"))?;
+            Ok(types::Attribute::MinShape(types::MinShapeAttribute {}))
+        }
+        generated::Attribute::ModShapeAttribute => {
+            let _a = op.attribute_as_mod_shape_attribute()
+                .ok_or(TosaError::MissingField("ModShapeAttribute"))?;
+            Ok(types::Attribute::ModShape(types::ModShapeAttribute {}))
+        }
+        generated::Attribute::DivCeilShapeAttribute => {
+            let _a = op.attribute_as_div_ceil_shape_attribute()
+                .ok_or(TosaError::MissingField("DivCeilShapeAttribute"))?;
+            Ok(types::Attribute::DivCeilShape(types::DivCeilShapeAttribute {}))
+        }
+        generated::Attribute::DivFloorShapeAttribute => {
+            let _a = op.attribute_as_div_floor_shape_attribute()
+                .ok_or(TosaError::MissingField("DivFloorShapeAttribute"))?;
+            Ok(types::Attribute::DivFloorShape(types::DivFloorShapeAttribute {}))
+        }
+        generated::Attribute::AssertEqualShapeAttribute => {
+            let a = op.attribute_as_assert_equal_shape_attribute()
+                .ok_or(TosaError::MissingField("AssertEqualShapeAttribute"))?;
+            Ok(types::Attribute::AssertEqualShape(types::AssertEqualShapeAttribute {
+                allow_broadcast: a.allow_broadcast(),
+            }))
+        }
+        generated::Attribute::Conv2dBlockScaledAttribute => {
+            let a = op.attribute_as_conv_2d_block_scaled_attribute()
+                .ok_or(TosaError::MissingField("Conv2dBlockScaledAttribute"))?;
+            Ok(types::Attribute::Conv2dBlockScaled(types::Conv2dBlockScaledAttribute {
+                block_size: types::BlockSize::from(a.block_size()),
+            }))
+        }
+        generated::Attribute::MaxPool2dAdaptiveAttribute => {
+            let a = op.attribute_as_max_pool_2d_adaptive_attribute()
+                .ok_or(TosaError::MissingField("MaxPool2dAdaptiveAttribute"))?;
+            Ok(types::Attribute::MaxPool2dAdaptive(types::MaxPool2dAdaptiveAttribute {
+                nan_mode: types::NanPropagationMode::from(a.nan_mode()),
+            }))
+        }
+        generated::Attribute::AvgPool2dAdaptiveAttribute => {
+            let a = op.attribute_as_avg_pool_2d_adaptive_attribute()
+                .ok_or(TosaError::MissingField("AvgPool2dAdaptiveAttribute"))?;
+            Ok(types::Attribute::AvgPool2dAdaptive(types::AvgPool2dAdaptiveAttribute {
+                acc_type: types::DType::from(a.acc_type()),
+            }))
+        }
         _ => Err(TosaError::UnknownAttribute(attr_type.0)),
     }
 }
@@ -836,7 +936,7 @@ fn serialize_tensor<'a>(
             is_unranked: tensor.is_unranked,
             variable_name,
             offset: tensor.offset,
-            size_: tensor.size,
+            size: tensor.size,
         },
     )
 }
@@ -1047,12 +1147,10 @@ fn serialize_attribute<'a>(
             (generated::Attribute::AddAttribute, Some(o.as_union_value()))
         }
 
-        types::Attribute::ArithmeticRightShift(_) => {
+        types::Attribute::ArithmeticRightShift(a) => {
             let o = generated::ArithmeticRightShiftAttribute::create(
                 fbb,
-                &generated::ArithmeticRightShiftAttributeArgs {
-                    round: false,
-                },
+                &generated::ArithmeticRightShiftAttributeArgs { round: a.round },
             );
             (generated::Attribute::ArithmeticRightShiftAttribute, Some(o.as_union_value()))
         }
@@ -1470,6 +1568,121 @@ fn serialize_attribute<'a>(
                 },
             );
             (generated::Attribute::CastToBlockScaledAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::Dim(a) => {
+            let o = generated::DimAttribute::create(
+                fbb,
+                &generated::DimAttributeArgs {
+                    axis: a.axis,
+                },
+            );
+            (generated::Attribute::DimAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::ConcatShape(_) => {
+            let o = generated::ConcatShapeAttribute::create(fbb, &generated::ConcatShapeAttributeArgs {});
+            (generated::Attribute::ConcatShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::AddShape(_) => {
+            let o = generated::AddShapeAttribute::create(fbb, &generated::AddShapeAttributeArgs {});
+            (generated::Attribute::AddShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::SubShape(_) => {
+            let o = generated::SubShapeAttribute::create(fbb, &generated::SubShapeAttributeArgs {});
+            (generated::Attribute::SubShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::MulShape(_) => {
+            let o = generated::MulShapeAttribute::create(fbb, &generated::MulShapeAttributeArgs {});
+            (generated::Attribute::MulShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::SliceShape(_) => {
+            let o = generated::SliceShapeAttribute::create(fbb, &generated::SliceShapeAttributeArgs {});
+            (generated::Attribute::SliceShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::Exp2Shape(_) => {
+            let o = generated::Exp2ShapeAttribute::create(fbb, &generated::Exp2ShapeAttributeArgs {});
+            (generated::Attribute::Exp2ShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::Log2CeilShape(_) => {
+            let o = generated::Log2CeilShapeAttribute::create(fbb, &generated::Log2CeilShapeAttributeArgs {});
+            (generated::Attribute::Log2CeilShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::Log2FloorShape(_) => {
+            let o = generated::Log2FloorShapeAttribute::create(fbb, &generated::Log2FloorShapeAttributeArgs {});
+            (generated::Attribute::Log2FloorShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::MaxShape(_) => {
+            let o = generated::MaxShapeAttribute::create(fbb, &generated::MaxShapeAttributeArgs {});
+            (generated::Attribute::MaxShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::MinShape(_) => {
+            let o = generated::MinShapeAttribute::create(fbb, &generated::MinShapeAttributeArgs {});
+            (generated::Attribute::MinShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::ModShape(_) => {
+            let o = generated::ModShapeAttribute::create(fbb, &generated::ModShapeAttributeArgs {});
+            (generated::Attribute::ModShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::DivCeilShape(_) => {
+            let o = generated::DivCeilShapeAttribute::create(fbb, &generated::DivCeilShapeAttributeArgs {});
+            (generated::Attribute::DivCeilShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::DivFloorShape(_) => {
+            let o = generated::DivFloorShapeAttribute::create(fbb, &generated::DivFloorShapeAttributeArgs {});
+            (generated::Attribute::DivFloorShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::AssertEqualShape(a) => {
+            let o = generated::AssertEqualShapeAttribute::create(
+                fbb,
+                &generated::AssertEqualShapeAttributeArgs {
+                    allow_broadcast: a.allow_broadcast,
+                },
+            );
+            (generated::Attribute::AssertEqualShapeAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::Conv2dBlockScaled(a) => {
+            let o = generated::Conv2dBlockScaledAttribute::create(
+                fbb,
+                &generated::Conv2dBlockScaledAttributeArgs {
+                    block_size: generated::BlockSize::from(a.block_size),
+                },
+            );
+            (generated::Attribute::Conv2dBlockScaledAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::MaxPool2dAdaptive(a) => {
+            let o = generated::MaxPool2dAdaptiveAttribute::create(
+                fbb,
+                &generated::MaxPool2dAdaptiveAttributeArgs {
+                    nan_mode: generated::NanPropagationMode::from(a.nan_mode),
+                },
+            );
+            (generated::Attribute::MaxPool2dAdaptiveAttribute, Some(o.as_union_value()))
+        }
+
+        types::Attribute::AvgPool2dAdaptive(a) => {
+            let o = generated::AvgPool2dAdaptiveAttribute::create(
+                fbb,
+                &generated::AvgPool2dAdaptiveAttributeArgs {
+                    acc_type: generated::DType::from(a.acc_type),
+                },
+            );
+            (generated::Attribute::AvgPool2dAdaptiveAttribute, Some(o.as_union_value()))
         }
     }
 }

@@ -1,4 +1,5 @@
-// Include the flatc-generated code
+// flatc output for docs/tosa.fbs, committed so builds need no flatc
+// (regenerate with scripts/regen_generated.sh).
 #[allow(
     unused_imports,
     dead_code,
@@ -7,7 +8,7 @@
     mismatched_lifetime_syntaxes
 )]
 mod tosa_generated {
-    include!(concat!(env!("OUT_DIR"), "/tosa_generated.rs"));
+    include!("generated/tosa_generated.rs");
 }
 
 pub mod builder;

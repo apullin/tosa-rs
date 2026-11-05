@@ -10,7 +10,7 @@ fn test_load_minimal_add_fixture() {
     assert_eq!(graph.version.major, 1);
     assert_eq!(graph.version.minor, 0);
     assert_eq!(graph.version.patch, 0);
-    assert_eq!(graph.version.draft, false);
+    assert!(!graph.version.draft);
 
     // Regions
     assert_eq!(graph.regions.len(), 1);
@@ -62,7 +62,7 @@ fn test_load_conv2d_relu_fixture() {
     assert_eq!(graph.version.major, 1);
     assert_eq!(graph.version.minor, 0);
     assert_eq!(graph.version.patch, 0);
-    assert_eq!(graph.version.draft, false);
+    assert!(!graph.version.draft);
 
     // Region and block structure
     assert_eq!(graph.regions.len(), 1);
@@ -87,7 +87,7 @@ fn test_load_conv2d_relu_fixture() {
             assert_eq!(attr.pad, vec![1, 1, 1, 1]);
             assert_eq!(attr.stride, vec![1, 1]);
             assert_eq!(attr.dilation, vec![1, 1]);
-            assert_eq!(attr.local_bound, false);
+            assert!(!attr.local_bound);
             assert_eq!(attr.acc_type, DType::Fp32);
         }
         other => panic!("Expected Conv2d attribute, got {:?}", other),
